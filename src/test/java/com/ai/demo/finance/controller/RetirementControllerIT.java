@@ -1,0 +1,125 @@
+package com.ai.demo.finance.controller;
+
+import static com.ai.demo.finance.controller.ApiVersion.ACCEPT_VERSION;
+import static com.ai.demo.finance.controller.ApiVersion.API_V1;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.ai.demo.finance.dto.RetirementDetailDTO;
+import com.ai.demo.finance.model.RetirementDetail;
+import com.ai.demo.finance.model.repository.RetirementRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class RetirementControllerIT {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    @Autowired
+    private RetirementRepository retirementRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        retirementRepository.deleteAll();
+    }
+
+    @Test
+    void testCreateRetirementDetail() throws Exception {
+        RetirementDetailDTO retirementDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1));
+
+        mockMvc.perform(post(RetirementController.ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(retirementDetail)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists());
+    }
+
+    @Test
+    void testGetRetirementDetail() throws Exception {
+        RetirementDetail saved = retirementRepository.save(
+                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                        .incomePerMonthDesired(BigDecimal.TEN)
+                        .build());
+        Long id = saved.getId();
+
+        mockMvc.perform(get(RetirementController.ENDPOINT + "/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.lifeExpectation").value(saved.getLifeExpectation()))
+                .andExpect(jsonPath("$.retirementDate").value(saved.getRetirementDate().toString()))
+                .andExpect(jsonPath("$.incomePerMonthDesired").value("10.0"));
+    }
+
+    @Test
+    void testUpdateRetirementDetail() throws Exception {
+        RetirementDetail saved = retirementRepository.save(
+                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                        .incomePerMonthDesired(BigDecimal.TEN)
+                        .build());
+        Long id = saved.getId();
+
+        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1));
+
+        mockMvc.perform(put(RetirementController.ENDPOINT + "/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.lifeExpectation").value(dto.lifeExpectation()))
+                .andExpect(jsonPath("$.retirementDate").value(dto.retirementDate().toString()))
+                .andExpect(jsonPath("$.incomePerMonthDesired").value(dto.incomePerMonthDesired()));
+    }
+
+    @Test
+    void testDeleteRetirementDetail() throws Exception {
+        RetirementDetail saved = retirementRepository.save(
+                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                        .incomePerMonthDesired(BigDecimal.TEN)
+                        .build());
+        Long id = saved.getId();
+
+        mockMvc.perform(delete(RetirementController.ENDPOINT + "/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1))
+                .andExpect(status().isNoContent());
+    }
+
+    private String asJsonString(final Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
