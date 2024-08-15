@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountHistory extends Account {
+@Builder
+public class AccountHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
