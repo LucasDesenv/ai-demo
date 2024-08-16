@@ -5,12 +5,14 @@ import static com.ai.demo.finance.controller.ApiVersion.API_V1;
 import static com.ai.demo.finance.model.enums.AccountType.SAVINGS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ai.demo.finance.dto.AccountDTO;
+import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.repository.AccountRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,6 +114,44 @@ class AccountControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(ACCEPT_VERSION, API_V1))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDepositSuccess() throws Exception {
+        Account saved = accountRepository.save(
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+        Long id = saved.getId();
+        BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("500"));
+        mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(balanceDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.amount").value("1500.0"));
+    }
+
+    @Test
+    void testDepositAccountNotFound() throws Exception {
+        Long id = 999L;
+        BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("500"));
+        mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(balanceDTO)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDepositInvalidAmount() throws Exception {
+        Account saved = accountRepository.save(
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+        Long id = saved.getId();
+        BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("-500"));
+        mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(balanceDTO)))
+                .andExpect(status().isBadRequest());
     }
 
     private String asJsonString(final Object obj) {

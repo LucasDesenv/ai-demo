@@ -27,4 +27,10 @@ public class AccountHistory {
 
     @JoinColumn(name = "account_id", foreignKey = @ForeignKey(name = "FK_ACCOUNT_HISTORY_ACCOUNT"), insertable = false, updatable = false)
     private Long accountId;
+
+    public AccountHistory(Account account) {
+        this.accountId = account.getId();
+        this.amount = account.getAmount();
+        this.date = ZonedDateTime.now();
+    }
 }
