@@ -26,4 +26,12 @@ public class GlobalExceptionHandler {
         log.error(ex);
         return new ErrorDTO(ex.getClass().getCanonicalName(), ex.getMessage());
     }
+
+    @ExceptionHandler(InvalidOperationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorDTO handleInvalidOperationException(InvalidOperationException ex) {
+        log.error(ex.getMessage());
+        return new ErrorDTO(ex.getClass().getCanonicalName(), ex.getMessage());
+    }
 }
