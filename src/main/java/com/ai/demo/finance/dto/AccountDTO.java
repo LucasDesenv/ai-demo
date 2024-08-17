@@ -9,5 +9,6 @@ public record AccountDTO(
         @JsonProperty("id") Long id,
         @JsonProperty("amount") BigDecimal amount,
         @JsonProperty("type") AccountType type,
-        @JsonProperty("date") LocalDateTime date) {
+        @JsonProperty("date") LocalDateTime date,
+        @JsonProperty("username") String username) {
 }

@@ -2,6 +2,7 @@ package com.ai.demo.finance.service;
 
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
+import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.AccountMapper;
 import com.ai.demo.finance.model.Account;
@@ -20,9 +21,11 @@ public class AccountService {
     private static final AccountMapper MAPPER = Mappers.getMapper(AccountMapper.class);
     private final AccountRepository accountRepository;
     private final AccountHistoryRepository historyRepository;
+    private final UserService userService;
 
     public AccountDTO createAccount(AccountDTO accountDTO) {
-        Account entity = MAPPER.toAccountToCreate(accountDTO);
+        UserDTO user = userService.findByUsername(accountDTO.username());
+        Account entity = MAPPER.toAccountToCreate(accountDTO, user.id());
         return MAPPER.toAccountDTO(accountRepository.save(entity));
     }
 

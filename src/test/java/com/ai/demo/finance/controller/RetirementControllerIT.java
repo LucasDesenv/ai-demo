@@ -7,7 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.model.RetirementDetail;
+import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.repository.RetirementRepository;
+import com.ai.demo.finance.model.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetirementControllerIT {
 
+    private static final User DEFAULT_USER = new User(3L, "john");
     @Autowired
     private MockMvc mockMvc;
 
@@ -40,19 +43,24 @@ class RetirementControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        userRepository.save(DEFAULT_USER);
     }
 
     @AfterEach
     void tearDown() {
         retirementRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     void testCreateRetirementDetail() throws Exception {
-        RetirementDetailDTO retirementDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1));
+        RetirementDetailDTO retirementDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1), "john");
 
         mockMvc.perform(post(RetirementController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -67,6 +75,7 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
+                        .userId(DEFAULT_USER.getId())
                         .build());
         Long id = saved.getId();
 
@@ -85,10 +94,11 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
+                        .userId(DEFAULT_USER.getId())
                         .build());
         Long id = saved.getId();
 
-        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1));
+        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1), "user");
 
         mockMvc.perform(put(RetirementController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,6 +116,7 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
+                        .userId(DEFAULT_USER.getId())
                         .build());
         Long id = saved.getId();
 
