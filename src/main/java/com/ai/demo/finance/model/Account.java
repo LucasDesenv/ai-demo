@@ -30,6 +30,8 @@ public class Account {
     private AccountType type;
     @Column(nullable = false)
     private LocalDateTime date;
+    @Column(nullable = false, updatable = false)
+    private Long userId;
 
     /**
      * Adds the specified deposit amount to the account balance.

@@ -1,5 +1,6 @@
 package com.ai.demo.finance.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,5 +25,7 @@ public class RetirementDetail {
     private BigDecimal incomePerMonthDesired;
     private Integer lifeExpectation;
     private LocalDate retirementDate;
+    @Column(nullable = false, updatable = false, unique = true)
+    private Long userId;
 
 }

@@ -8,5 +8,6 @@ public record RetirementDetailDTO(
         @JsonProperty("id") Long id,
         @JsonProperty("incomePerMonthDesired") BigDecimal incomePerMonthDesired,
         @JsonProperty("lifeExpectation") Integer lifeExpectation,
-        @JsonProperty("retirementDate") LocalDate retirementDate) {
+        @JsonProperty("retirementDate") LocalDate retirementDate,
+        @JsonProperty("username") String username) {
 }

@@ -1,6 +1,7 @@
 package com.ai.demo.finance.service;
 
 import com.ai.demo.finance.dto.RetirementDetailDTO;
+import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.RetirementDetailMapper;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -15,9 +16,11 @@ public class RetirementService {
 
     private static final RetirementDetailMapper MAPPER = Mappers.getMapper(RetirementDetailMapper.class);
     private final RetirementRepository retirementRepository;
+    private final UserService userService;
 
     public RetirementDetailDTO createRetirementDetail(RetirementDetailDTO retirementDetail) {
-        RetirementDetail entity = MAPPER.toRetirementDetail(retirementDetail);
+        UserDTO user = userService.findByUsername(retirementDetail.username());
+        RetirementDetail entity = MAPPER.toRetirementDetail(retirementDetail, user.id());
         return MAPPER.toRetirementDetailDTO(retirementRepository.save(entity));
     }
 

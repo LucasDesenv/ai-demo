@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
+import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.AccountHistory;
@@ -37,6 +38,8 @@ class AccountServiceTest {
     private AccountRepository accountRepository;
     @Mock
     private AccountHistoryRepository historyRepository;
+    @Mock
+    private UserService userService;
     @InjectMocks
     private AccountService accountService;
 
@@ -44,7 +47,9 @@ class AccountServiceTest {
     void test_create_account_success() {
         // Arrange
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
-        AccountDTO dto = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now());
+        AccountDTO dto = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now(), "john");
+
+        when(userService.findByUsername("john")).thenReturn(new UserDTO(2L, "john"));
         when(accountRepository.save(accountCaptor.capture())).then(AdditionalAnswers.returnsFirstArg());
 
         // Act & Assert
@@ -85,7 +90,7 @@ class AccountServiceTest {
     void test_update_account_success() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now());
+        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), null);
 
         when(accountRepository.existsById(id)).thenReturn(true);
         when(accountRepository.save(any(Account.class))).then(AdditionalAnswers.returnsFirstArg());
@@ -99,7 +104,7 @@ class AccountServiceTest {
     void test_update_account_not_found() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now());
+        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), "john");
 
         when(accountRepository.existsById(id)).thenReturn(false);
 
@@ -137,9 +142,9 @@ class AccountServiceTest {
         BigDecimal depositAmount = new BigDecimal("100.00");
         BalanceDTO balanceDTO = new BalanceDTO(depositAmount);
 
-        Account account = new Account(accountId, new BigDecimal("200.00"), SAVINGS, LocalDateTime.now());
+        Account account = new Account(accountId, new BigDecimal("200.00"), SAVINGS, LocalDateTime.now(), 39L);
         AccountHistory accountHistory = new AccountHistory(account);
-        Account updatedAccount = new Account(accountId, new BigDecimal("300.00"), SAVINGS, LocalDateTime.now());
+        Account updatedAccount = new Account(accountId, new BigDecimal("300.00"), SAVINGS, LocalDateTime.now(), 39L);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(updatedAccount);

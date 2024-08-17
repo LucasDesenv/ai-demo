@@ -14,7 +14,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.model.Account;
+import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.repository.AccountRepository;
+import com.ai.demo.finance.model.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,6 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountControllerIT {
+    private static final User DEFAULT_USER = new User(3L, "john");
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,20 +49,26 @@ class AccountControllerIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        userRepository.save(DEFAULT_USER);
+
     }
 
     @AfterEach
     void tearDown() {
         accountRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     void testCreateAccount() throws Exception {
-        AccountDTO accountDTO = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now());
+        AccountDTO accountDTO = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now(),
+                DEFAULT_USER.getUsername());
 
         mockMvc.perform(post(AccountController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -72,7 +81,9 @@ class AccountControllerIT {
     @Test
     void testGetAccount() throws Exception {
         Account saved = accountRepository.save(
-                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now())
+                        .userId(DEFAULT_USER.getId())
+                        .build());
         Long id = saved.getId();
 
         mockMvc.perform(get(AccountController.ENDPOINT + "/" + id)
@@ -88,10 +99,12 @@ class AccountControllerIT {
     @Test
     void testUpdateAccount() throws Exception {
         Account saved = accountRepository.save(
-                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
+                        .userId(DEFAULT_USER.getId())
+                        .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now());
+        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), DEFAULT_USER.getUsername());
 
         mockMvc.perform(put(AccountController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -107,7 +120,9 @@ class AccountControllerIT {
     @Test
     void testDeleteAccount() throws Exception {
         Account saved = accountRepository.save(
-                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
+                        .userId(DEFAULT_USER.getId())
+                        .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
         mockMvc.perform(delete(AccountController.ENDPOINT + "/" + id)
@@ -119,7 +134,9 @@ class AccountControllerIT {
     @Test
     void testDepositSuccess() throws Exception {
         Account saved = accountRepository.save(
-                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
+                        .userId(DEFAULT_USER.getId())
+                        .date(LocalDateTime.now()).build());
         Long id = saved.getId();
         BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("500"));
         mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
@@ -144,7 +161,9 @@ class AccountControllerIT {
     @Test
     void testDepositInvalidAmount() throws Exception {
         Account saved = accountRepository.save(
-                Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now()).build());
+                Account.builder().amount(new BigDecimal("1000"))
+                        .userId(DEFAULT_USER.getId())
+                        .type(SAVINGS).date(LocalDateTime.now()).build());
         Long id = saved.getId();
         BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("-500"));
         mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
