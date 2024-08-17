@@ -40,7 +40,7 @@ public class RetirementServiceTest {
     @Test
     void test_create_retirement_detail_success() {
 
-        RetirementDetailDTO dto = new RetirementDetailDTO(1L, new BigDecimal("5000"), 80, LocalDate.now(), "user");
+        RetirementDetailDTO dto = new RetirementDetailDTO(1L, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(), "user");
         RetirementDetail entity = MAPPER.toRetirementDetail(dto);
 
         when(retirementRepository.save(any(RetirementDetail.class))).thenReturn(entity);
@@ -70,7 +70,8 @@ public class RetirementServiceTest {
     void test_finding_existing_retirement_detail_by_id() {
         // Prepare
         Long id = 1L;
-        RetirementDetailDTO expectedDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), 30, LocalDate.now(), null);
+        RetirementDetailDTO expectedDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(),
+                null);
         when(retirementRepository.findById(id)).thenReturn(Optional.of(MAPPER.toRetirementDetail(expectedDetail)));
 
         // Execute
@@ -85,8 +86,9 @@ public class RetirementServiceTest {
     void test_update_retirement_detail_success() {
         // Arrange
         Long id = 1L;
-        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.now(), "user");
-        RetirementDetail savedRetirementDetail = new RetirementDetail(id, new BigDecimal("5000"), 85, LocalDate.now(), 39L);
+        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(), "user");
+        RetirementDetail savedRetirementDetail = new RetirementDetail(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(),
+                39L);
 
         when(retirementRepository.existsById(id)).thenReturn(true);
         when(retirementRepository.save(any(RetirementDetail.class))).thenReturn(savedRetirementDetail);
@@ -107,7 +109,7 @@ public class RetirementServiceTest {
     void test_update_retirement_detail_not_found() {
         // Arrange
         Long id = 1L;
-        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.now(), "user");
+        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(), "user");
 
         when(retirementRepository.existsById(id)).thenReturn(false);
 

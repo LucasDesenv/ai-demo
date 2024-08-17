@@ -23,7 +23,7 @@ public class RetirementDetail {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private BigDecimal incomePerMonthDesired;
-    private Integer lifeExpectation;
+    private LocalDate lifeExpectation;
     private LocalDate retirementDate;
     @Column(nullable = false, updatable = false, unique = true)
     private Long userId;
