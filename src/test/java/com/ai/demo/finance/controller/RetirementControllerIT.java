@@ -60,7 +60,8 @@ class RetirementControllerIT {
 
     @Test
     void testCreateRetirementDetail() throws Exception {
-        RetirementDetailDTO retirementDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1), "john");
+        RetirementDetailDTO retirementDetail = new RetirementDetailDTO(1L, new BigDecimal("5000"), LocalDate.now().plusYears(50),
+                LocalDate.of(2025, 1, 1), "john");
 
         mockMvc.perform(post(RetirementController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +74,7 @@ class RetirementControllerIT {
     @Test
     void testGetRetirementDetail() throws Exception {
         RetirementDetail saved = retirementRepository.save(
-                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
                         .userId(DEFAULT_USER.getId())
                         .build());
@@ -84,7 +85,7 @@ class RetirementControllerIT {
                 .header(ACCEPT_VERSION, API_V1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.lifeExpectation").value(saved.getLifeExpectation()))
+                .andExpect(jsonPath("$.lifeExpectation").value(saved.getLifeExpectation().toString()))
                 .andExpect(jsonPath("$.retirementDate").value(saved.getRetirementDate().toString()))
                 .andExpect(jsonPath("$.incomePerMonthDesired").value("10.0"));
     }
@@ -92,13 +93,14 @@ class RetirementControllerIT {
     @Test
     void testUpdateRetirementDetail() throws Exception {
         RetirementDetail saved = retirementRepository.save(
-                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
                         .userId(DEFAULT_USER.getId())
                         .build());
         Long id = saved.getId();
 
-        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), 85, LocalDate.of(2025, 1, 1), "user");
+        RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.of(2025, 1, 1),
+                "user");
 
         mockMvc.perform(put(RetirementController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +108,7 @@ class RetirementControllerIT {
                 .content(asJsonString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
-                .andExpect(jsonPath("$.lifeExpectation").value(dto.lifeExpectation()))
+                .andExpect(jsonPath("$.lifeExpectation").value(dto.lifeExpectation().toString()))
                 .andExpect(jsonPath("$.retirementDate").value(dto.retirementDate().toString()))
                 .andExpect(jsonPath("$.incomePerMonthDesired").value(dto.incomePerMonthDesired()));
     }
@@ -114,7 +116,7 @@ class RetirementControllerIT {
     @Test
     void testDeleteRetirementDetail() throws Exception {
         RetirementDetail saved = retirementRepository.save(
-                RetirementDetail.builder().lifeExpectation(80).retirementDate(LocalDate.now())
+                RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
                         .userId(DEFAULT_USER.getId())
                         .build());
