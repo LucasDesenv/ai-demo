@@ -1,20 +1,26 @@
-package com.ai.demo.finance.calculation;
+package com.ai.demo.finance.event.retirement;
 
+import com.ai.demo.finance.exception.InvalidOperationException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
+import com.ai.demo.finance.model.cache.RetirementGoal;
+import com.ai.demo.finance.service.RetirementGoalService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.Objects;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RetirementGoalCalculator {
+@RequiredArgsConstructor
+class RetirementGoalCalculator {
 
     private static final int DIVISION_SCALE = 4;
     private static final int PERCENTAGE_SCALE = 2;
+    private final RetirementGoalService retirementGoalService;
 
     /**
      * Calculates the progress towards achieving the retirement goal based on the
@@ -25,13 +31,20 @@ public class RetirementGoalCalculator {
      * @return the percentage of progress made towards the total savings needed for
      *         retirement
      */
-    public BigDecimal calculateRetirementGoal(RetirementDetail retirementDetail, List<Account> accounts) {
+    public RetirementGoal calculateRetirementGoal(RetirementDetail retirementDetail, List<Account> accounts) {
+        if (retirementDetail == null || accounts == null || accounts.isEmpty()) {
+            throw new InvalidOperationException("Insufficient retirement information to calculate goal.");
+        }
         int retirementDurationInMonths = calculateRetirementDurationInMonths(retirementDetail);
 
         BigDecimal totalSavingNeededToRetire = calculateTotalSavingsNeededToRetire(retirementDetail, retirementDurationInMonths);
         BigDecimal totalSavingSoFar = calculateTotalSavingsSoFar(accounts);
+        BigDecimal percentage = calculatePercentageFromAchievingRetirement(totalSavingSoFar, totalSavingNeededToRetire);
 
-        return calculatePercentageFromAchievingRetirement(totalSavingSoFar, totalSavingNeededToRetire);
+        RetirementGoal retirementGoal = new RetirementGoal(retirementDetail.getUserId(), percentage);
+        retirementGoalService.saveRetirementGoal(retirementGoal);
+
+        return retirementGoal;
     }
 
     /**

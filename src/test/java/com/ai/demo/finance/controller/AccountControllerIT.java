@@ -14,11 +14,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.model.Account;
+import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.repository.AccountRepository;
+import com.ai.demo.finance.model.repository.RetirementRepository;
 import com.ai.demo.finance.model.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +49,8 @@ class AccountControllerIT {
 
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private RetirementRepository retirementRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -137,6 +142,12 @@ class AccountControllerIT {
                 Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
                         .userId(DEFAULT_USER.getId())
                         .date(LocalDateTime.now()).build());
+        retirementRepository.save(RetirementDetail.builder()
+                .userId(DEFAULT_USER.getId())
+                .incomePerMonthDesired(BigDecimal.valueOf(1200))
+                .retirementDate(LocalDate.now().plusYears(30))
+                .lifeExpectation(LocalDate.now().plusYears(50))
+                .build());
         Long id = saved.getId();
         BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("500"));
         mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
