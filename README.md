@@ -14,6 +14,12 @@ Playground Project to know how far a person is to achieving their retirement.
 - Take into account the inflation every month.
   - NonFunction: find a public API to fetch the inflation for a given Country. 
 
+### Missing reqs
+- Add docker
+- Add Scheduler for calculating the retirement goal every day
+- Find public API to fetch inflation
+- Find AI to perform data analytic
+- Add a Backend-For-Frontend API to create all the requirement data at once.
 
 ## Development
 ### Requirements

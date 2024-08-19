@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.dto.UserDTO;
+import com.ai.demo.finance.event.retirement.RetirementEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.RetirementDetailMapper;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -25,6 +26,7 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 public class RetirementServiceTest {
@@ -34,6 +36,8 @@ public class RetirementServiceTest {
     private RetirementRepository retirementRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     @InjectMocks
     private RetirementService retirementService;
 
@@ -87,8 +91,9 @@ public class RetirementServiceTest {
         // Arrange
         Long id = 1L;
         RetirementDetailDTO dto = new RetirementDetailDTO(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(), "user");
+        long userId = 39L;
         RetirementDetail savedRetirementDetail = new RetirementDetail(id, new BigDecimal("5000"), LocalDate.now().plusYears(50), LocalDate.now(),
-                39L);
+                userId);
 
         when(retirementRepository.existsById(id)).thenReturn(true);
         when(retirementRepository.save(any(RetirementDetail.class))).thenReturn(savedRetirementDetail);
@@ -102,6 +107,7 @@ public class RetirementServiceTest {
         assertEquals(dto.incomePerMonthDesired(), result.incomePerMonthDesired());
         assertEquals(dto.lifeExpectation(), result.lifeExpectation());
         assertEquals(dto.retirementDate(), result.retirementDate());
+        verify(eventPublisher).publishEvent(new RetirementEvent(userId));
     }
 
     // Throws NotFoundResourceException when the ID does not exist

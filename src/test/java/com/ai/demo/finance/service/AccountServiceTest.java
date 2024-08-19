@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.dto.UserDTO;
+import com.ai.demo.finance.event.retirement.RetirementEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.AccountHistory;
@@ -30,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
@@ -40,6 +42,8 @@ class AccountServiceTest {
     private AccountHistoryRepository historyRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     @InjectMocks
     private AccountService accountService;
 
@@ -60,6 +64,7 @@ class AccountServiceTest {
 
         Account accountCaptorValue = accountCaptor.getValue();
         assertNull(accountCaptorValue.getId());
+        verify(eventPublisher).publishEvent(new RetirementEvent(2L));
     }
 
     @Test
@@ -134,17 +139,17 @@ class AccountServiceTest {
         assertThrows(NotFoundResourceException.class, () -> accountService.deleteAccount(id));
     }
 
-    // Successfully adds balance to an existing account
     @Test
-    void test_add_balance_success() {
+    void test_deposit_success() {
 
         Long accountId = 1L;
         BigDecimal depositAmount = new BigDecimal("100.00");
         BalanceDTO balanceDTO = new BalanceDTO(depositAmount);
 
-        Account account = new Account(accountId, new BigDecimal("200.00"), SAVINGS, LocalDateTime.now(), 39L);
+        long userId = 39L;
+        Account account = new Account(accountId, new BigDecimal("200.00"), SAVINGS, LocalDateTime.now(), userId);
         AccountHistory accountHistory = new AccountHistory(account);
-        Account updatedAccount = new Account(accountId, new BigDecimal("300.00"), SAVINGS, LocalDateTime.now(), 39L);
+        Account updatedAccount = new Account(accountId, new BigDecimal("300.00"), SAVINGS, LocalDateTime.now(), userId);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(updatedAccount);
@@ -156,11 +161,11 @@ class AccountServiceTest {
         assertEquals(updatedAccount.getAmount(), result.amount());
         verify(accountRepository).save(any(Account.class));
         verify(historyRepository).save(any(AccountHistory.class));
+        verify(eventPublisher).publishEvent(new RetirementEvent(userId));
     }
 
-    // Account not found for the given ID
     @Test
-    void test_add_balance_account_not_found() {
+    void test_deposit_account_not_found() {
         Long accountId = 1L;
         BigDecimal depositAmount = new BigDecimal("100.00");
         BalanceDTO balanceDTO = new BalanceDTO(depositAmount);
@@ -170,6 +175,7 @@ class AccountServiceTest {
         assertThrows(NotFoundResourceException.class, () -> accountService.deposit(accountId, balanceDTO));
         verify(accountRepository, never()).save(any(Account.class));
         verify(historyRepository, never()).save(any(AccountHistory.class));
+        verify(eventPublisher, never()).publishEvent(any(RetirementEvent.class));
     }
 
 }

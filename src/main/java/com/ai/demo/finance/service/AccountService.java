@@ -3,6 +3,7 @@ package com.ai.demo.finance.service;
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.dto.UserDTO;
+import com.ai.demo.finance.event.retirement.RetirementEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.AccountMapper;
 import com.ai.demo.finance.model.Account;
@@ -11,6 +12,7 @@ import com.ai.demo.finance.model.repository.AccountHistoryRepository;
 import com.ai.demo.finance.model.repository.AccountRepository;
 import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,12 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountHistoryRepository historyRepository;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AccountDTO createAccount(AccountDTO accountDTO) {
         UserDTO user = userService.findByUsername(accountDTO.username());
         Account entity = MAPPER.toAccountToCreate(accountDTO, user.id());
+        eventPublisher.publishEvent(new RetirementEvent(entity.getUserId()));
         return MAPPER.toAccountDTO(accountRepository.save(entity));
     }
 
@@ -59,6 +63,7 @@ public class AccountService {
         AccountHistory history = account.deposit(balanceDTO.amount());
         Account savedAccount = accountRepository.save(account);
         historyRepository.save(history);
+        eventPublisher.publishEvent(new RetirementEvent(savedAccount.getUserId()));
         return MAPPER.toAccountDTO(savedAccount);
     }
 
