@@ -27,6 +27,12 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundResourceException("User not found"));
     }
 
+    public UserDTO findById(Long id) {
+        return userRepository.findById(id)
+                .map(MAPPER::toUserDTO)
+                .orElseThrow(() -> new NotFoundResourceException("User not found"));
+    }
+
     public UserDTO updateUser(Long id, UserDTO userDTO) {
         if (userRepository.existsById(id)) {
             User user = MAPPER.toUser(userDTO);

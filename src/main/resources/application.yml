@@ -22,3 +22,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     display-request-duration: true
+imf:
+  dataservice.ifs.base.url: http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS
+  scheduler:
+    cron: "0 0 0 1 * ?" #first day of the month

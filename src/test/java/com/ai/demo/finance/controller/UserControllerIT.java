@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.model.User;
+import com.ai.demo.finance.model.enums.Country;
 import com.ai.demo.finance.model.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -53,7 +54,7 @@ class UserControllerIT {
 
     @Test
     void testCreateUser() throws Exception {
-        UserDTO userDTO = new UserDTO(null, "testuser");
+        UserDTO userDTO = new UserDTO(null, "testuser", Country.BR);
 
         mockMvc.perform(post(UserController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -66,7 +67,7 @@ class UserControllerIT {
     @Test
     void testCreateUserWithExistingUsername() throws Exception {
         userRepository.save(User.builder().username("testuser").build());
-        UserDTO userDTO = new UserDTO(null, "testuser");
+        UserDTO userDTO = new UserDTO(null, "testuser", Country.BR);
 
         mockMvc.perform(post(UserController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +78,7 @@ class UserControllerIT {
 
     @Test
     void testCreateUserWithEmptyUsername() throws Exception {
-        UserDTO userDTO = new UserDTO(null, "");
+        UserDTO userDTO = new UserDTO(null, "", Country.BR);
 
         mockMvc.perform(post(UserController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +91,7 @@ class UserControllerIT {
 
     @Test
     void testCreateUserWithNullUsername() throws Exception {
-        UserDTO userDTO = new UserDTO(null, null);
+        UserDTO userDTO = new UserDTO(null, null, Country.BR);
 
         mockMvc.perform(post(UserController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,9 +102,21 @@ class UserControllerIT {
     }
 
     @Test
+    void testCreateUserWithNullCountry() throws Exception {
+        UserDTO userDTO = new UserDTO(null, "john", null);
+
+        mockMvc.perform(post(UserController.ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(ACCEPT_VERSION, API_V1)
+                .content(asJsonString(userDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("country: must not be null")));
+    }
+
+    @Test
     void testCreateUserWithUsernameExceedingMaxLength() throws Exception {
         String longUsername = "a".repeat(16); // Assuming the max length is 15
-        UserDTO userDTO = new UserDTO(null, longUsername);
+        UserDTO userDTO = new UserDTO(null, longUsername, Country.BR);
 
         mockMvc.perform(post(UserController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)

@@ -31,8 +31,7 @@ public class ObjectMapperConfig {
      * @return JavaTimeModule
      */
     private JavaTimeModule customJavaTimeModule() {
-        JavaTimeModule module = new JavaTimeModule();
-        return module;
+        return new JavaTimeModule();
     }
 
     /**

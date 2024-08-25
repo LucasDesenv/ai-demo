@@ -1,0 +1,41 @@
+
+{
+  "CompactData": {
+    "DataSet": {
+      "Series": {
+        "@FREQ": "M",
+        "@REF_AREA": "ES",
+        "@INDICATOR": "PCPI_IX",
+        "@UNIT_MULT": "0",
+        "@BASE_YEAR": "2010=100",
+        "@TIME_FORMAT": "P1M",
+        "Obs": [
+          {
+            "@TIME_PERIOD": "2024-01",
+            "@OBS_VALUE": "129.308147893353"
+          },
+          {
+            "@TIME_PERIOD": "2024-02",
+            "@OBS_VALUE": "129.767665931526"
+          },
+          {
+            "@TIME_PERIOD": "2024-03",
+            "@OBS_VALUE": "130.756256847398"
+          },
+          {
+            "@TIME_PERIOD": "2024-04",
+            "@OBS_VALUE": "131.666170977578"
+          },
+          {
+            "@TIME_PERIOD": "2024-05",
+            "@OBS_VALUE": "132.012804931932"
+          },
+          {
+            "@TIME_PERIOD": "2024-06",
+            "@OBS_VALUE": "132.509950998045"
+          }
+        ]
+      }
+    }
+  }
+}

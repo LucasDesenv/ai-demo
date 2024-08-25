@@ -4,7 +4,9 @@ import com.ai.demo.finance.exception.InvalidOperationException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.cache.RetirementGoal;
+import com.ai.demo.finance.model.repository.AccountRepository;
 import com.ai.demo.finance.service.RetirementGoalService;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -21,27 +23,30 @@ class RetirementGoalCalculator {
     private static final int DIVISION_SCALE = 4;
     private static final int PERCENTAGE_SCALE = 2;
     private final RetirementGoalService retirementGoalService;
+    private final AccountRepository accountRepository;
 
     /**
      * Calculates the progress towards achieving the retirement goal based on the
      * provided retirement details and list of accounts.
      * @param retirementDetail the retirement details including income per month
      *            desired, retirement date, and life expectation
-     * @param accounts the list of accounts containing savings information
      * @return the percentage of progress made towards the total savings needed for
      *         retirement
      */
-    public RetirementGoal calculateRetirementGoal(RetirementDetail retirementDetail, List<Account> accounts) {
-        if (retirementDetail == null || accounts == null || accounts.isEmpty()) {
+    public RetirementGoal calculateRetirementGoal(@NotNull RetirementDetail retirementDetail) {
+        List<Account> accounts = accountRepository.findAllByUserId(retirementDetail.getUserId());
+
+        if (accounts == null || accounts.isEmpty()) {
             throw new InvalidOperationException("Insufficient retirement information to calculate goal.");
         }
+
         int retirementDurationInMonths = calculateRetirementDurationInMonths(retirementDetail);
 
         BigDecimal totalSavingNeededToRetire = calculateTotalSavingsNeededToRetire(retirementDetail, retirementDurationInMonths);
-        BigDecimal totalSavingSoFar = calculateTotalSavingsSoFar(accounts);
-        BigDecimal percentage = calculatePercentageFromAchievingRetirement(totalSavingSoFar, totalSavingNeededToRetire);
+        BigDecimal totalSavingGross = calculateTotalNetSavings(accounts);
+        BigDecimal percentageToAchieveTheGoal = calculatePercentageFromAchievingRetirement(totalSavingGross, totalSavingNeededToRetire);
 
-        RetirementGoal retirementGoal = new RetirementGoal(retirementDetail.getUserId(), percentage);
+        RetirementGoal retirementGoal = new RetirementGoal(retirementDetail.getUserId(), percentageToAchieveTheGoal);
         retirementGoalService.saveRetirementGoal(retirementGoal);
 
         return retirementGoal;
@@ -59,8 +64,8 @@ class RetirementGoalCalculator {
                 .multiply(BigDecimal.valueOf(100)).setScale(PERCENTAGE_SCALE, RoundingMode.HALF_UP);
     }
 
-    private static BigDecimal calculateTotalSavingsSoFar(List<Account> accounts) {
-        return accounts.stream().map(Account::getAmount).filter(Objects::nonNull).reduce(BigDecimal::add)
+    private static BigDecimal calculateTotalNetSavings(List<Account> accounts) {
+        return accounts.stream().map(Account::getAmountNet).filter(Objects::nonNull).reduce(BigDecimal::add)
                 .orElse(BigDecimal.ZERO);
     }
 

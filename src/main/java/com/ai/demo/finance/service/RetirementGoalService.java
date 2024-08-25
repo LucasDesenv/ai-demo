@@ -24,7 +24,7 @@ public class RetirementGoalService {
         if (retirementGoal == null) {
             throw new InvalidOperationException("retirementGoal is null");
         }
-        redisTemplate.opsForValue().set(retirementGoal.getUserId().toString(), retirementGoal, timeToLive);
+        redisTemplate.opsForValue().set(retirementGoal.getKey(), retirementGoal, timeToLive);
     }
 
     public RetirementGoal getRetirementGoal(Long userId) {

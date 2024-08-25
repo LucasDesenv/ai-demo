@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.User;
+import com.ai.demo.finance.model.enums.Country;
 import com.ai.demo.finance.model.repository.RetirementRepository;
 import com.ai.demo.finance.model.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +31,7 @@ import org.springframework.web.context.WebApplicationContext;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetirementControllerIT {
 
-    private static final User DEFAULT_USER = new User(3L, "john");
+    private static final User DEFAULT_USER = new User(3L, "john", Country.BR);
     @Autowired
     private MockMvc mockMvc;
 

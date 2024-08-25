@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.ai.demo.finance.exception.InvalidOperationException;
+import com.ai.demo.finance.model.cache.InflationRate;
 import com.ai.demo.finance.model.enums.AccountType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -83,5 +84,33 @@ class AccountTest {
         // Assertions
         assertEquals(new BigDecimal("150"), account.getAmount());
         assertNotNull(history);
+    }
+
+    @Test
+    void test_calculate_net_amount_with_valid_positive_inflation_rate() {
+        BigDecimal amount = new BigDecimal("1000");
+        BigDecimal expectedNetAmount = new BigDecimal("900.00");
+        InflationRate inflationRate = InflationRate.builder().percentageRate(BigDecimal.valueOf(10))
+                .build();
+
+        Account account = Account.builder().amount(amount).build();
+
+        account.calculateNetAmount(inflationRate);
+
+        assertEquals(expectedNetAmount, account.getAmountNet());
+    }
+
+    @Test
+    void test_calculate_net_amount_with_valid_negative_inflation_rate() {
+        BigDecimal amount = new BigDecimal("1000");
+        BigDecimal expectedNetAmount = new BigDecimal("1100.00");
+        InflationRate inflationRate = InflationRate.builder().percentageRate(BigDecimal.valueOf(-10))
+                .build();
+
+        Account account = Account.builder().amount(amount).build();
+
+        account.calculateNetAmount(inflationRate);
+
+        assertEquals(expectedNetAmount, account.getAmountNet());
     }
 }
