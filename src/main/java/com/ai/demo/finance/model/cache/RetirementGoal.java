@@ -1,5 +1,6 @@
 package com.ai.demo.finance.model.cache;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
@@ -14,4 +15,9 @@ import lombok.ToString;
 public class RetirementGoal implements Serializable {
     private Long userId;
     private BigDecimal goalPercentage;
+
+    @JsonIgnore
+    public String getKey() {
+        return userId.toString();
+    }
 }

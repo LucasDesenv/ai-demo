@@ -33,7 +33,7 @@ public class UserController {
     @Operation(summary = "Create a new user")
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserDTO userDTO) {
         UserDTO createdUser = userService.createUser(userDTO);
-        return ResponseEntity.created(URI.create(ENDPOINT.concat("/").concat(String.valueOf(createdUser.id()))))
+        return ResponseEntity.created(URI.create(ENDPOINT.concat("/").concat(String.valueOf(createdUser.username()))))
                 .body(createdUser);
     }
 

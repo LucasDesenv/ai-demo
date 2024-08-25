@@ -16,6 +16,7 @@ import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.User;
+import com.ai.demo.finance.model.enums.Country;
 import com.ai.demo.finance.model.repository.AccountRepository;
 import com.ai.demo.finance.model.repository.RetirementRepository;
 import com.ai.demo.finance.model.repository.UserRepository;
@@ -39,7 +40,7 @@ import org.springframework.web.context.WebApplicationContext;
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountControllerIT {
-    private static final User DEFAULT_USER = new User(3L, "john");
+    private User defaultUser;
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,8 +61,8 @@ class AccountControllerIT {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        userRepository.save(DEFAULT_USER);
-
+        defaultUser = userRepository.saveAndFlush(new User(null, "john", Country.ES));
+        System.out.println(defaultUser.getId());
     }
 
     @AfterEach
@@ -73,7 +74,7 @@ class AccountControllerIT {
     @Test
     void testCreateAccount() throws Exception {
         AccountDTO accountDTO = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now(),
-                DEFAULT_USER.getUsername());
+                defaultUser.getUsername());
 
         mockMvc.perform(post(AccountController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +88,7 @@ class AccountControllerIT {
     void testGetAccount() throws Exception {
         Account saved = accountRepository.save(
                 Account.builder().amount(new BigDecimal("1000")).type(SAVINGS).date(LocalDateTime.now())
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .build());
         Long id = saved.getId();
 
@@ -105,11 +106,11 @@ class AccountControllerIT {
     void testUpdateAccount() throws Exception {
         Account saved = accountRepository.save(
                 Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), DEFAULT_USER.getUsername());
+        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), defaultUser.getUsername());
 
         mockMvc.perform(put(AccountController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +127,7 @@ class AccountControllerIT {
     void testDeleteAccount() throws Exception {
         Account saved = accountRepository.save(
                 Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
@@ -140,10 +141,10 @@ class AccountControllerIT {
     void testDepositSuccess() throws Exception {
         Account saved = accountRepository.save(
                 Account.builder().amount(new BigDecimal("1000")).type(SAVINGS)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .date(LocalDateTime.now()).build());
         retirementRepository.save(RetirementDetail.builder()
-                .userId(DEFAULT_USER.getId())
+                .userId(defaultUser.getId())
                 .incomePerMonthDesired(BigDecimal.valueOf(1200))
                 .retirementDate(LocalDate.now().plusYears(30))
                 .lifeExpectation(LocalDate.now().plusYears(50))
@@ -173,7 +174,7 @@ class AccountControllerIT {
     void testDepositInvalidAmount() throws Exception {
         Account saved = accountRepository.save(
                 Account.builder().amount(new BigDecimal("1000"))
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .type(SAVINGS).date(LocalDateTime.now()).build());
         Long id = saved.getId();
         BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("-500"));

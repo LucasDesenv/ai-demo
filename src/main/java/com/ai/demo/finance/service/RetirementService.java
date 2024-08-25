@@ -2,7 +2,8 @@ package com.ai.demo.finance.service;
 
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.dto.UserDTO;
-import com.ai.demo.finance.event.retirement.RetirementEvent;
+import com.ai.demo.finance.event.EventSource;
+import com.ai.demo.finance.event.retirement.RetirementGoalEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.RetirementDetailMapper;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -40,7 +41,7 @@ public class RetirementService {
 
         RetirementDetail retirementDetail = MAPPER.toRetirementDetail(dto);
         RetirementDetail saved = retirementRepository.save(retirementDetail);
-        eventPublisher.publishEvent(new RetirementEvent(saved.getUserId()));
+        eventPublisher.publishEvent(new RetirementGoalEvent(saved.getUserId(), EventSource.RETIREMENT_UPDATE));
         return MAPPER.toRetirementDetailDTO(saved);
 
     }

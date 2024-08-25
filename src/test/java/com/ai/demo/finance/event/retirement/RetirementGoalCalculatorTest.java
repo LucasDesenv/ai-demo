@@ -1,12 +1,14 @@
 package com.ai.demo.finance.event.retirement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import com.ai.demo.finance.exception.InvalidOperationException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.cache.RetirementGoal;
 import com.ai.demo.finance.model.enums.AccountType;
+import com.ai.demo.finance.model.repository.AccountRepository;
 import com.ai.demo.finance.service.RetirementGoalService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,8 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RetirementGoalCalculatorTest {
 
+    public static final long USER_ID = 1L;
     @Mock
     private RetirementGoalService retirementGoalService;
+    @Mock
+    private AccountRepository accountRepository;
     @InjectMocks
     private RetirementGoalCalculator retirementGoalCalculator;
 
@@ -38,18 +43,19 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("2000"))
                 .lifeExpectation(lifeExpectation)
                 .retirementDate(retirementDate)
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(
-                Account.builder().amount(new BigDecimal("50000")).userId(1L).build(),
-                Account.builder().amount(new BigDecimal("100000")).userId(1L).build());
+                Account.builder().amountNet(new BigDecimal("50000")).userId(USER_ID).build(),
+                Account.builder().amountNet(new BigDecimal("100000")).userId(USER_ID).build());
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts).getGoalPercentage();
+        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
 
         BigDecimal goalExpected = new BigDecimal("20.83");
         assertEquals(goalExpected, result);
-        Mockito.verify(retirementGoalService).saveRetirementGoal(new RetirementGoal(1L, goalExpected));
+        Mockito.verify(retirementGoalService).saveRetirementGoal(new RetirementGoal(USER_ID, goalExpected));
     }
 
     @Test
@@ -59,20 +65,21 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("2000"))
                 .lifeExpectation(LocalDate.of(2040, 2, 1))
                 .retirementDate(LocalDate.of(2040, 1, 1))
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         Account account = Account.builder()
-                .amount(new BigDecimal("2000"))
+                .amountNet(new BigDecimal("2000"))
                 .type(AccountType.SAVINGS)
                 .date(LocalDateTime.now())
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(account);
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
         // Act
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts).getGoalPercentage();
+        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
 
         // Assert
         assertEquals(new BigDecimal("100.00"), result);
@@ -85,27 +92,28 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("2000"))
                 .lifeExpectation(LocalDate.of(2050, 1, 1))
                 .retirementDate(LocalDate.of(2049, 1, 1))
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         Account account1 = Account.builder()
-                .amount(new BigDecimal("5000"))
+                .amountNet(new BigDecimal("5000"))
                 .type(AccountType.SAVINGS)
                 .date(LocalDateTime.now())
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         Account account2 = Account.builder()
-                .amount(new BigDecimal("3000"))
+                .amountNet(new BigDecimal("3000"))
                 .type(AccountType.SAVINGS)
                 .date(LocalDateTime.now())
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(account1, account2);
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
         // Act
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts).getGoalPercentage();
+        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
 
         // Assert
         assertEquals(new BigDecimal("33.33"), result);
@@ -118,13 +126,15 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("3000"))
                 .lifeExpectation(LocalDate.of(2050, 1, 1))
                 .retirementDate(LocalDate.of(2050, 1, 1))
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(
-                Account.builder().amount(new BigDecimal("60000")).build(),
-                Account.builder().amount(new BigDecimal("40000")).build());
+                Account.builder().amountNet(new BigDecimal("60000")).userId(USER_ID).build(),
+                Account.builder().amountNet(new BigDecimal("40000")).userId(USER_ID).build());
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts))
+        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Retirement duration must be greater than 0 months");
     }
@@ -136,14 +146,15 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("2000"))
                 .lifeExpectation(LocalDate.of(2050, 1, 1))
                 .retirementDate(LocalDate.of(2040, 1, 1))
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(
-                Account.builder().amount(new BigDecimal("50000")).userId(1L).build(),
-                Account.builder().amount(null).userId(1L).build());
+                Account.builder().amountNet(new BigDecimal("50000")).userId(USER_ID).build(),
+                Account.builder().amountNet(null).userId(USER_ID).build());
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts).getGoalPercentage();
+        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
 
         assertEquals(new BigDecimal("20.83"), result);
     }
@@ -155,14 +166,17 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("999999999999999999999999999999999999999999999999999999999999999"))
                 .lifeExpectation(LocalDate.of(2100, 1, 1))
                 .retirementDate(LocalDate.of(2090, 1, 1))
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of(
-                Account.builder().amount(new BigDecimal("99999999999999999999999999999999999999999999999999999999999999")).userId(1L).build(),
-                Account.builder().amount(new BigDecimal("88888888888888888888888888888888888888888888888888888888888888")).userId(1L).build());
+                Account.builder().amountNet(new BigDecimal("99999999999999999999999999999999999999999999999999999999999999")).userId(
+                        USER_ID).build(),
+                Account.builder().amountNet(new BigDecimal("88888888888888888888888888888888888888888888888888888888888888")).userId(
+                        USER_ID).build());
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts).getGoalPercentage();
+        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
 
         assertEquals(new BigDecimal("0.16"), result);
     }
@@ -174,12 +188,13 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("2000"))
                 .retirementDate(LocalDate.of(2025, 1, 1))
                 .lifeExpectation(LocalDate.of(2045, 1, 1))
-                .userId(1L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = List.of();
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts))
+        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail))
                 .isInstanceOf(InvalidOperationException.class)
                 .hasMessage("Insufficient retirement information to calculate goal.");
     }
@@ -191,24 +206,13 @@ class RetirementGoalCalculatorTest {
                 .incomePerMonthDesired(new BigDecimal("3000"))
                 .retirementDate(LocalDate.of(2030, 1, 1))
                 .lifeExpectation(LocalDate.of(2050, 1, 1))
-                .userId(2L)
+                .userId(USER_ID)
                 .build();
 
         List<Account> accounts = null;
+        when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
 
-        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail, accounts))
-                .isInstanceOf(InvalidOperationException.class)
-                .hasMessage("Insufficient retirement information to calculate goal.");
-    }
-
-    @Test
-    void test_handle_null_retirement_detail() {
-
-        List<Account> accounts = List.of(
-                Account.builder().amount(new BigDecimal("50000")).userId(1L).build(),
-                Account.builder().amount(new BigDecimal("100000")).userId(1L).build());
-
-        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(null, accounts))
+        Assertions.assertThatThrownBy(() -> retirementGoalCalculator.calculateRetirementGoal(retirementDetail))
                 .isInstanceOf(InvalidOperationException.class)
                 .hasMessage("Insufficient retirement information to calculate goal.");
     }

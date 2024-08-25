@@ -1,6 +1,7 @@
 package com.ai.demo.finance.model;
 
 import com.ai.demo.finance.exception.InvalidOperationException;
+import com.ai.demo.finance.model.cache.InflationRate;
 import com.ai.demo.finance.model.enums.AccountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +26,10 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(name = "amount_gross")
     private BigDecimal amount;
+    @Column(name = "amount_net")
+    private BigDecimal amountNet;
     @Column(nullable = false)
     private AccountType type;
     @Column(nullable = false)
@@ -52,5 +56,9 @@ public class Account {
                 .orElse(deposit);
 
         return history;
+    }
+
+    public void calculateNetAmount(InflationRate inflationRate) {
+        this.amountNet = inflationRate.calculateRateFromPercentage().multiply(amount);
     }
 }

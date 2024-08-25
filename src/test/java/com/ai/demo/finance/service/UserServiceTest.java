@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.model.User;
+import com.ai.demo.finance.model.enums.Country;
 import com.ai.demo.finance.model.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ class UserServiceTest {
                 .username("testuser")
                 .build();
 
-        userDTO = new UserDTO(1L, "testuser");
+        userDTO = new UserDTO(1L, "testuser", Country.BR);
     }
 
     @Test
