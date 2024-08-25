@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ai.demo.finance.config.RedisConfigForIntegrationTest;
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.model.Account;
@@ -36,7 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@SpringBootTest
+@SpringBootTest(classes = {RedisConfigForIntegrationTest.class})
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountControllerIT {

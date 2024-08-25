@@ -5,6 +5,7 @@ import static com.ai.demo.finance.controller.ApiVersion.API_V1;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.ai.demo.finance.config.RedisConfigForIntegrationTest;
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.User;
@@ -26,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@SpringBootTest
+@SpringBootTest(classes = {RedisConfigForIntegrationTest.class})
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetirementControllerIT {
