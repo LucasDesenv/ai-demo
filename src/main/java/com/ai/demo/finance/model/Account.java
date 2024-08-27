@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Table(name = "account")
 @Entity
 @Getter
 @AllArgsConstructor
@@ -26,6 +28,8 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @Column(length = 100)
+    private String description;
     @Column(name = "amount_gross")
     private BigDecimal amount;
     @Column(name = "amount_net")
@@ -33,7 +37,8 @@ public class Account {
     @Column(nullable = false)
     private AccountType type;
     @Column(nullable = false)
-    private LocalDateTime date;
+    @Builder.Default
+    private LocalDateTime date = LocalDateTime.now();
     @Column(nullable = false, updatable = false)
     private Long userId;
 
