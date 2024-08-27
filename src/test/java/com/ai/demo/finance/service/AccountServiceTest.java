@@ -61,7 +61,7 @@ class AccountServiceTest {
     void test_create_account_success() {
         // Arrange
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
-        AccountDTO dto = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now(), "john");
+        AccountDTO dto = new AccountDTO(1L, "my", new BigDecimal("1000"), SAVINGS, "john");
 
         when(userService.findByUsername("john")).thenReturn(new UserDTO(2L, "john", Country.BR));
         when(accountRepository.save(accountCaptor.capture())).then(AdditionalAnswers.returnsFirstArg());
@@ -105,7 +105,7 @@ class AccountServiceTest {
     void test_update_account_success() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), null);
+        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, null);
 
         when(accountRepository.existsById(id)).thenReturn(true);
         when(accountRepository.save(any(Account.class))).then(AdditionalAnswers.returnsFirstArg());
@@ -119,7 +119,7 @@ class AccountServiceTest {
     void test_update_account_not_found() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), "john");
+        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, "john");
 
         when(accountRepository.existsById(id)).thenReturn(false);
 
@@ -157,9 +157,9 @@ class AccountServiceTest {
         BalanceDTO balanceDTO = new BalanceDTO(depositAmount);
 
         long userId = 39L;
-        Account account = new Account(accountId, new BigDecimal("200.00"), null, SAVINGS, LocalDateTime.now(), userId);
+        Account account = new Account(accountId, "my", new BigDecimal("200.00"), null, SAVINGS, LocalDateTime.now(), userId);
         AccountHistory accountHistory = new AccountHistory(account);
-        Account updatedAccount = new Account(accountId, new BigDecimal("300.00"), null, SAVINGS, LocalDateTime.now(), userId);
+        Account updatedAccount = new Account(accountId, "my", new BigDecimal("300.00"), null, SAVINGS, LocalDateTime.now(), userId);
 
         when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(updatedAccount);

@@ -74,7 +74,7 @@ class AccountControllerIT {
 
     @Test
     void testCreateAccount() throws Exception {
-        AccountDTO accountDTO = new AccountDTO(1L, new BigDecimal("1000"), SAVINGS, LocalDateTime.now(),
+        AccountDTO accountDTO = new AccountDTO(1L, "my", new BigDecimal("1000"), SAVINGS,
                 defaultUser.getUsername());
 
         mockMvc.perform(post(AccountController.ENDPOINT)
@@ -111,7 +111,7 @@ class AccountControllerIT {
                         .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
-        AccountDTO dto = new AccountDTO(id, new BigDecimal("2000"), SAVINGS, LocalDateTime.now(), defaultUser.getUsername());
+        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, defaultUser.getUsername());
 
         mockMvc.perform(put(AccountController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +121,7 @@ class AccountControllerIT {
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.amount").value("2000"))
                 .andExpect(jsonPath("$.type").value("SAVINGS"))
-                .andExpect(jsonPath("$.date").value(dto.date().toString()));
+                .andExpect(jsonPath("$.description").value("my"));
     }
 
     @Test

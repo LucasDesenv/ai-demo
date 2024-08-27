@@ -36,6 +36,7 @@ public class AccountService {
     private final InflationService inflationService;
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     public AccountDTO createAccount(AccountDTO accountDTO) {
         UserDTO user = userService.findByUsername(accountDTO.username());
         Account entity = MAPPER.toAccountToCreate(accountDTO, user.id());
