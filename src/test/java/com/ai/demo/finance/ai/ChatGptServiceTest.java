@@ -46,7 +46,7 @@ class ChatGptServiceTest {
 
     @BeforeEach
     public void setUp() {
-        chatGptService = new ChatGptService(restTemplate, API_KEY, retirementService, inflationService, userService);
+        chatGptService = new ChatGptService(restTemplate, API_KEY, "gpt-3.5-turbo", retirementService, inflationService, userService);
     }
 
     @Test

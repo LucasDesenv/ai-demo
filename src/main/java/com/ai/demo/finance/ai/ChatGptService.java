@@ -23,15 +23,19 @@ import org.springframework.web.client.RestTemplate;
 public class ChatGptService {
     private final RestTemplate restTemplate;
     private final String apiKey;
+    private final String openApiModel;
     private final RetirementService retirementService;
     private final InflationService inflationService;
     private final UserService userService;
 
     public ChatGptService(RestTemplate restTemplate,
-            @Value("${openai.api.key}") String apiKey, RetirementService retirementService, InflationService inflationService,
+            @Value("${openai.api.key}") String apiKey,
+            @Value("${openai.api.model:gpt-3.5-turbo}") String openApiModel,
+            RetirementService retirementService, InflationService inflationService,
             UserService userService) {
         this.restTemplate = restTemplate;
         this.apiKey = apiKey;
+        this.openApiModel = openApiModel;
         this.retirementService = retirementService;
         this.inflationService = inflationService;
         this.userService = userService;
@@ -67,9 +71,8 @@ public class ChatGptService {
         return ask(advicePrompt);
     }
 
-    private String ask(String prompt) {
-        ChatGptRequest request = new ChatGptRequest(
-                "gpt-3.5-turbo",
+    public String ask(String prompt) {
+        ChatGptRequest request = new ChatGptRequest(openApiModel,
                 List.of(new ChatGptRequest.Message("user", prompt)));
 
         HttpHeaders headers = new HttpHeaders();

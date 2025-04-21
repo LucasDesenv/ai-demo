@@ -4,7 +4,7 @@ Playground Project to know how far a person is to achieving their retirement.
 
 ## Business
 
-### Requirements
+### Requirements for Finance module
 - Create, Delete and Update a retirement plan.
   - If Updated, recalculate the retirement progress.
 - Have multiple bank account
@@ -14,15 +14,17 @@ Playground Project to know how far a person is to achieving their retirement.
 - Take into account the inflation every month.
   - NonFunction: find a public API to fetch the inflation for a given Country. 
 
-### Missing reqs
+#### Missing reqs
 - Add docker
-- Add Scheduler for calculating the retirement goal every day
+~~- Add Scheduler for calculating the retirement goal every day~~
 ~~- Find public API to fetch inflation~~
 - ~~Scheduler to fetch the inflation every month~~
-- Event to recalculate all accounts' net amount
-- Find AI to perform data analytic
-- Add a Backend-For-Frontend API to create all the requirement data at once.
+~~- Event to recalculate all accounts' net amount~~
+~~- Find AI to perform data analytic~~
 - 
+
+### Requirements for Traveling module
+
 
 ### IMF (International Monetary Fund) APIs
 - The **datamapper API** is a simply API that provides the inflation rate and does not make any deep analysis.
