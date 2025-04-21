@@ -3,7 +3,7 @@ package com.ai.demo.finance.service;
 import static com.ai.demo.finance.model.cache.InflationRateKeyGenerator.generateKey;
 
 import com.ai.demo.finance.event.EventSource;
-import com.ai.demo.finance.event.account.AccountNetAmountPerUserEvent;
+import com.ai.demo.finance.event.account.AccountEvent;
 import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.cache.InflationRate;
 import com.ai.demo.finance.model.enums.Country;
@@ -118,7 +118,7 @@ public class InflationService {
             Pageable pageRequest = PageRequest.of(page, size);
             userPage = userRepository.findAllByCountry(inflationRate.getCountry(), pageRequest);
 
-            userPage.getContent().forEach(user -> eventPublisher.publishEvent(new AccountNetAmountPerUserEvent(user.getId(), EventSource.SCAN)));
+            userPage.getContent().forEach(user -> eventPublisher.publishEvent(new AccountEvent(user.getId(), EventSource.SCAN)));
 
             page++;
         } while (userPage.hasNext());

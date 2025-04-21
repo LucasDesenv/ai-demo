@@ -8,6 +8,8 @@ import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.RetirementDetailMapper;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.repository.RetirementRepository;
+import java.util.List;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.springframework.context.ApplicationEventPublisher;
@@ -55,4 +57,11 @@ public class RetirementService {
 
     }
 
+    public List<RetirementDetailDTO> findAll() {
+        return retirementRepository.findAll().stream().map(MAPPER::toRetirementDetailDTO).toList();
+    }
+
+    public Optional<RetirementDetailDTO> findByUserId(Long userId) {
+        return retirementRepository.findByUserId(userId).map(MAPPER::toRetirementDetailDTO);
+    }
 }

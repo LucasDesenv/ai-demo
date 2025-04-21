@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ai.demo.finance.config.ObjectMapperConfig;
-import com.ai.demo.finance.event.account.AccountNetAmountPerUserEvent;
+import com.ai.demo.finance.event.account.AccountEvent;
 import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.cache.InflationRate;
 import com.ai.demo.finance.model.cache.InflationRateKeyGenerator;
@@ -140,8 +140,8 @@ class InflationServiceTest {
         IFSResponse ifsResponse = objectMapper.readValue(
                 InflationServiceTest.class.getResourceAsStream("/json/ifs-valid-response.json"), IFSResponse.class);
 
-        ArgumentCaptor<AccountNetAmountPerUserEvent> captor = ArgumentCaptor.forClass(
-                AccountNetAmountPerUserEvent.class);
+        ArgumentCaptor<AccountEvent> captor = ArgumentCaptor.forClass(
+                AccountEvent.class);
 
         when(restTemplate.getForEntity(Mockito.any(URI.class), Mockito.eq(IFSResponse.class)))
                 .thenReturn(ResponseEntity.of(Optional.of(ifsResponse)));
@@ -156,7 +156,7 @@ class InflationServiceTest {
                 .getForEntity(Mockito.any(URI.class), Mockito.eq(IFSResponse.class));
         verify(eventPublisher, times(6)).publishEvent(captor.capture());
 
-        List<AccountNetAmountPerUserEvent> allEvents = captor.getAllValues();
+        List<AccountEvent> allEvents = captor.getAllValues();
         Assertions.assertThat(allEvents).extracting("userId").containsOnlyElementsOf(Arrays.asList(98939L, 1233L));
     }
 

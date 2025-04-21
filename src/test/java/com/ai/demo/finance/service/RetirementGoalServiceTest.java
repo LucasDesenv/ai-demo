@@ -37,7 +37,7 @@ class RetirementGoalServiceTest {
         // Arrange
         ValueOperations<String, RetirementGoal> valueOperations = mock(ValueOperations.class);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        RetirementGoal retirementGoal = new RetirementGoal(1L, new BigDecimal("0.15"));
+        RetirementGoal retirementGoal = new RetirementGoal(1L, new BigDecimal("0.15"), new BigDecimal("2000"));
 
         // Act
         retirementGoalService.saveRetirementGoal(retirementGoal);
@@ -56,7 +56,7 @@ class RetirementGoalServiceTest {
     void test_retrieve_existing_retirement_goal() {
         // Arrange
         Long userId = 1L;
-        RetirementGoal expectedGoal = new RetirementGoal(userId, new BigDecimal("0.15"));
+        RetirementGoal expectedGoal = new RetirementGoal(userId, new BigDecimal("0.15"), new BigDecimal("2000"));
         when(redisTemplate.opsForValue().get(String.valueOf(userId))).thenReturn(expectedGoal);
 
         // Act

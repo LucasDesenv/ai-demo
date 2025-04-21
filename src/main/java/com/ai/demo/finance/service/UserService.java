@@ -5,6 +5,7 @@ import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.UserMapper;
 import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.repository.UserRepository;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
@@ -49,5 +50,9 @@ public class UserService {
         }
 
         userRepository.deleteById(id);
+    }
+
+    public List<UserDTO> findAll() {
+        return userRepository.findAll().stream().map(MAPPER::toUserDTO).toList();
     }
 }

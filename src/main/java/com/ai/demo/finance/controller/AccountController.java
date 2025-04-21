@@ -9,6 +9,7 @@ import com.ai.demo.finance.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,13 @@ public class AccountController {
     public ResponseEntity<AccountDTO> getAccount(@PathVariable Long id) {
         AccountDTO account = accountService.findById(id);
         return ResponseEntity.ok(account);
+    }
+
+    @GetMapping(value = ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Get all accounts")
+    public ResponseEntity<List<AccountDTO>> getAccountList() {
+        List<AccountDTO> accounts = accountService.findAll();
+        return ResponseEntity.ok(accounts);
     }
 
     @PutMapping(value = ENDPOINT + "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})

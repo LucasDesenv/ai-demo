@@ -4,7 +4,7 @@ import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.event.EventSource;
-import com.ai.demo.finance.event.account.AccountNetAmountPerUserEvent;
+import com.ai.demo.finance.event.account.AccountEvent;
 import com.ai.demo.finance.event.retirement.RetirementGoalEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.mapper.AccountMapper;
@@ -38,10 +38,12 @@ public class AccountService {
 
     @Transactional
     public AccountDTO createAccount(AccountDTO accountDTO) {
-        UserDTO user = userService.findByUsername(accountDTO.username());
+        UserDTO user = userService.findById(accountDTO.userId());
         Account entity = MAPPER.toAccountToCreate(accountDTO, user.id());
-        eventPublisher.publishEvent(new AccountNetAmountPerUserEvent(user.id(), EventSource.ACCOUNT_CREATION));
-        return MAPPER.toAccountDTO(accountRepository.save(entity));
+        AccountDTO savedAccount = MAPPER.toAccountDTO(accountRepository.saveAndFlush(entity));
+        eventPublisher.publishEvent(new AccountEvent(user.id(), EventSource.ACCOUNT_CREATION));
+        eventPublisher.publishEvent(new AccountEvent(user.id(), EventSource.RECALCULATION_NET_AMOUNT));
+        return savedAccount;
     }
 
     public AccountDTO findById(Long id) {
@@ -51,21 +53,22 @@ public class AccountService {
     }
 
     public AccountDTO updateAccount(Long id, AccountDTO accountDTO) {
-        if (accountRepository.existsById(id)) {
-            Account account = MAPPER.toAccount(accountDTO);
-            Account saved = accountRepository.save(account);
-            return MAPPER.toAccountDTO(saved);
-        }
-
-        throw new NotFoundResourceException("Account not found with id " + id);
-    }
-
-    public void deleteAccount(Long id) {
         if (!accountRepository.existsById(id)) {
             throw new NotFoundResourceException("Account not found with id " + id);
         }
 
+        Account account = MAPPER.toAccount(accountDTO);
+        Account saved = accountRepository.save(account);
+        eventPublisher.publishEvent(new AccountEvent(account.getUserId(), EventSource.RECALCULATION_NET_AMOUNT));
+        return MAPPER.toAccountDTO(saved);
+
+    }
+
+    public void deleteAccount(Long id) {
+        AccountDTO accountDTO = findById(id);
+
         accountRepository.deleteById(id);
+        eventPublisher.publishEvent(new AccountEvent(accountDTO.userId(), EventSource.RECALCULATION_NET_AMOUNT));
     }
 
     @Transactional
@@ -74,7 +77,7 @@ public class AccountService {
         AccountHistory history = account.deposit(balanceDTO.amount());
         Account savedAccount = accountRepository.save(account);
         historyRepository.save(history);
-        eventPublisher.publishEvent(new AccountNetAmountPerUserEvent(savedAccount.getUserId(), EventSource.DEPOSIT));
+        eventPublisher.publishEvent(new AccountEvent(savedAccount.getUserId(), EventSource.DEPOSIT));
         return MAPPER.toAccountDTO(savedAccount);
     }
 
@@ -82,18 +85,21 @@ public class AccountService {
     public void recalculateNetAmountPerUser(Long userId) {
         UserDTO user = userService.findById(userId);
         Country country = user.country();
-        Optional<InflationRate> inflationRateOpt = inflationService.fetchLatestMonthlyInflationRateForYearToDate(country);
 
+        Optional<InflationRate> inflationRateOpt = inflationService.fetchLatestMonthlyInflationRateForYearToDate(country);
+        InflationRate latestInflationRate = inflationRateOpt.orElse(InflationRate.noInflation());
         if (inflationRateOpt.isEmpty()) {
-            log.info("No Inflation rate found for country {}. Hence no updating accounts' amount", country);
-            return;
+            log.info("No Inflation rate found for country {}. Hence considering no inflation.", country);
         }
 
         List<Account> accounts = accountRepository.findAllByUserId(userId);
-        InflationRate latestInflationRate = inflationRateOpt.get();
 
         accounts.forEach(account -> account.calculateNetAmount(latestInflationRate));
         accountRepository.saveAll(accounts);
         eventPublisher.publishEvent(new RetirementGoalEvent(userId, EventSource.RECALCULATION_NET_AMOUNT));
+    }
+
+    public List<AccountDTO> findAll() {
+        return accountRepository.findAll().stream().map(MAPPER::toAccountDTO).toList();
     }
 }

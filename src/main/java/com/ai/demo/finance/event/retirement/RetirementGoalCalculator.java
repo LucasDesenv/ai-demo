@@ -1,5 +1,6 @@
 package com.ai.demo.finance.event.retirement;
 
+import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.finance.exception.InvalidOperationException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -24,6 +25,19 @@ class RetirementGoalCalculator {
     private static final int PERCENTAGE_SCALE = 2;
     private final RetirementGoalService retirementGoalService;
     private final AccountRepository accountRepository;
+    private final ChatGptService chatGptService;
+
+    /**
+     * Formula: totalSavingSoFar / totalSavingNeededToRetire * 100
+     * @param totalSavingSoFar
+     * @param totalSavingNeededToRetire
+     * @return percentage
+     */
+    private static BigDecimal calculatePercentageFromAchievingRetirement(BigDecimal totalSavingSoFar,
+            BigDecimal totalSavingNeededToRetire) {
+        return totalSavingSoFar.divide(totalSavingNeededToRetire, DIVISION_SCALE, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100)).setScale(PERCENTAGE_SCALE, RoundingMode.HALF_UP);
+    }
 
     /**
      * Calculates the progress towards achieving the retirement goal based on the
@@ -46,22 +60,13 @@ class RetirementGoalCalculator {
         BigDecimal totalSavingGross = calculateTotalNetSavings(accounts);
         BigDecimal percentageToAchieveTheGoal = calculatePercentageFromAchievingRetirement(totalSavingGross, totalSavingNeededToRetire);
 
-        RetirementGoal retirementGoal = new RetirementGoal(retirementDetail.getUserId(), percentageToAchieveTheGoal);
+        RetirementGoal retirementGoal = new RetirementGoal(retirementDetail.getUserId(), percentageToAchieveTheGoal, totalSavingGross);
+        String advice = chatGptService.personalizedFinancialAdvice(retirementDetail.getUserId(), retirementGoal);
+        retirementGoal.addAdvice(advice);
+
         retirementGoalService.saveRetirementGoal(retirementGoal);
 
         return retirementGoal;
-    }
-
-    /**
-     * Formula: totalSavingSoFar / totalSavingNeededToRetire * 100
-     * @param totalSavingSoFar
-     * @param totalSavingNeededToRetire
-     * @return percentage
-     */
-    private static BigDecimal calculatePercentageFromAchievingRetirement(BigDecimal totalSavingSoFar,
-            BigDecimal totalSavingNeededToRetire) {
-        return totalSavingSoFar.divide(totalSavingNeededToRetire, DIVISION_SCALE, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100)).setScale(PERCENTAGE_SCALE, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal calculateTotalNetSavings(List<Account> accounts) {

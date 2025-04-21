@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.finance.config.RedisConfigForIntegrationTest;
 import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -58,24 +60,26 @@ class AccountControllerIT {
     private ObjectMapper objectMapper;
     @Autowired
     private UserRepository userRepository;
+    @MockBean
+    private ChatGptService chatGptService;
 
     @BeforeEach
     void setUp() {
+        clearDependencies();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         defaultUser = userRepository.saveAndFlush(new User(null, "john", Country.ES));
-        System.out.println(defaultUser.getId());
     }
 
     @AfterEach
-    void tearDown() {
+    void clearDependencies() {
         accountRepository.deleteAll();
         userRepository.deleteAll();
+        retirementRepository.deleteAll();
     }
 
     @Test
     void testCreateAccount() throws Exception {
-        AccountDTO accountDTO = new AccountDTO(1L, "my", new BigDecimal("1000"), SAVINGS,
-                defaultUser.getUsername());
+        AccountDTO accountDTO = new AccountDTO(1L, defaultUser.getId(), "my", new BigDecimal("1000"), SAVINGS);
 
         mockMvc.perform(post(AccountController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -99,8 +103,7 @@ class AccountControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.amount").value("1000.0"))
-                .andExpect(jsonPath("$.type").value("SAVINGS"))
-                .andExpect(jsonPath("$.date").value(saved.getDate().toString()));
+                .andExpect(jsonPath("$.type").value("SAVINGS"));
     }
 
     @Test
@@ -111,7 +114,7 @@ class AccountControllerIT {
                         .date(LocalDateTime.now()).build());
         Long id = saved.getId();
 
-        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, defaultUser.getUsername());
+        AccountDTO dto = new AccountDTO(id, defaultUser.getId(), "desc", new BigDecimal("2000"), SAVINGS);
 
         mockMvc.perform(put(AccountController.ENDPOINT + "/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +124,7 @@ class AccountControllerIT {
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.amount").value("2000"))
                 .andExpect(jsonPath("$.type").value("SAVINGS"))
-                .andExpect(jsonPath("$.description").value("my"));
+                .andExpect(jsonPath("$.description").value("desc"));
     }
 
     @Test
@@ -162,7 +165,7 @@ class AccountControllerIT {
 
     @Test
     void testDepositAccountNotFound() throws Exception {
-        Long id = 999L;
+        long id = 999L;
         BalanceDTO balanceDTO = new BalanceDTO(new BigDecimal("500"));
         mockMvc.perform(patch(AccountController.ENDPOINT + "/" + id + "/deposit")
                 .contentType(MediaType.APPLICATION_JSON)

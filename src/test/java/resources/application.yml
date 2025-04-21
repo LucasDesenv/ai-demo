@@ -32,3 +32,6 @@ imf:
 redis:
   port: 8083
   host: localhost
+openai:
+  api:
+    key: blabla

@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 @Tag(name = "RetirementGoal", description = "APIs related to retirement goal")
 public class RetirementGoalController {
-    public static final String ENDPOINT = "/user/:id/retirement/goal";
+    public static final String ENDPOINT = "/user/{userId}/retirement";
     private final RetirementGoalService retirementGoalService;
 
-    @GetMapping(value = ENDPOINT + "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "Get user's retirement goal by ID")
-    public ResponseEntity<RetirementGoal> getGoal(@PathVariable Long id) {
-        return ResponseEntity.ok(retirementGoalService.getRetirementGoal(id));
+    public ResponseEntity<RetirementGoal> getGoalByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(retirementGoalService.getRetirementGoal(userId));
     }
 
 }

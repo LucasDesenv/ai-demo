@@ -8,6 +8,7 @@ import com.ai.demo.finance.service.RetirementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,13 @@ public class RetirementController {
     public ResponseEntity<RetirementDetailDTO> getRetirementDetail(@PathVariable Long id) {
         RetirementDetailDTO retirementDetail = retirementService.findById(id);
         return ResponseEntity.ok(retirementDetail);
+    }
+
+    @GetMapping(value = ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Get all retirement details")
+    public ResponseEntity<List<RetirementDetailDTO>> getRetirementDetailList() {
+        List<RetirementDetailDTO> retirements = retirementService.findAll();
+        return ResponseEntity.ok(retirements);
     }
 
     @PutMapping(value = ENDPOINT + "/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})

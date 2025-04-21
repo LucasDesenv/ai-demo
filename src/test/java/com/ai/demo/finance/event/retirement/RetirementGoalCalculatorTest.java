@@ -1,8 +1,11 @@
 package com.ai.demo.finance.event.retirement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.finance.exception.InvalidOperationException;
 import com.ai.demo.finance.model.Account;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -30,6 +33,8 @@ class RetirementGoalCalculatorTest {
     private RetirementGoalService retirementGoalService;
     @Mock
     private AccountRepository accountRepository;
+    @Mock
+    private ChatGptService chatGptService;
     @InjectMocks
     private RetirementGoalCalculator retirementGoalCalculator;
 
@@ -50,12 +55,18 @@ class RetirementGoalCalculatorTest {
                 Account.builder().amountNet(new BigDecimal("50000")).userId(USER_ID).build(),
                 Account.builder().amountNet(new BigDecimal("100000")).userId(USER_ID).build());
         when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
+        when(chatGptService.personalizedFinancialAdvice(eq(USER_ID), any(RetirementGoal.class))).thenReturn("Advice from AI");
 
-        BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();
+        RetirementGoal retirementGoal = retirementGoalCalculator.calculateRetirementGoal(retirementDetail);
 
-        BigDecimal goalExpected = new BigDecimal("20.83");
-        assertEquals(goalExpected, result);
-        Mockito.verify(retirementGoalService).saveRetirementGoal(new RetirementGoal(USER_ID, goalExpected));
+        assertEquals(new BigDecimal("20.83"), retirementGoal.getGoalPercentage());
+
+        assertEquals(new BigDecimal("150000"), retirementGoal.getCurrentNetWorth());
+
+        assertEquals(1, retirementGoal.getAdvices().size());
+        assertEquals("Advice from AI", retirementGoal.getAdvices().get(0));
+
+        Mockito.verify(retirementGoalService).saveRetirementGoal(any(RetirementGoal.class));
     }
 
     @Test
@@ -111,6 +122,7 @@ class RetirementGoalCalculatorTest {
 
         List<Account> accounts = List.of(account1, account2);
         when(accountRepository.findAllByUserId(USER_ID)).thenReturn(accounts);
+        when(chatGptService.personalizedFinancialAdvice(eq(USER_ID), any(RetirementGoal.class))).thenReturn("Advice from AI");
 
         // Act
         BigDecimal result = retirementGoalCalculator.calculateRetirementGoal(retirementDetail).getGoalPercentage();

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,13 @@ public class UserController {
     @Operation(summary = "Get user by ID")
     public ResponseEntity<UserDTO> getUserByUserName(@PathVariable String username) {
         UserDTO userDTO = userService.findByUsername(username);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @GetMapping(value = ENDPOINT, produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "Get all users")
+    public ResponseEntity<List<UserDTO>> getUserByUserName() {
+        List<UserDTO> userDTO = userService.findAll();
         return ResponseEntity.ok(userDTO);
     }
 }

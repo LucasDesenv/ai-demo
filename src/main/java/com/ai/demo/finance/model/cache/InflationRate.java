@@ -29,6 +29,13 @@ public class InflationRate implements Serializable {
      * @return rate
      */
     public BigDecimal calculateRateFromPercentage() {
+        if (this.percentageRate == null) {
+            return BigDecimal.ONE;
+        }
         return BigDecimal.ONE.subtract(this.getPercentageRate().divide(ONE_HUNDRED, SCALE, HALF_UP));
+    }
+
+    public static InflationRate noInflation() {
+        return InflationRate.builder().percentageRate(BigDecimal.ZERO).build();
     }
 }

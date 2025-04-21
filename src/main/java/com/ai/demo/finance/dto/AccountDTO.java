@@ -6,8 +6,8 @@ import java.math.BigDecimal;
 
 public record AccountDTO(
         @JsonProperty("id") Long id,
+        @JsonProperty("userId") Long userId,
         @JsonProperty("description") String description,
         @JsonProperty("amount") BigDecimal amount,
-        @JsonProperty("type") AccountType type,
-        @JsonProperty("username") String username) {
+        @JsonProperty("type") AccountType type) {
 }

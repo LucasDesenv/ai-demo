@@ -5,6 +5,7 @@ import static com.ai.demo.finance.controller.ApiVersion.API_V1;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.finance.config.RedisConfigForIntegrationTest;
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.model.RetirementDetail;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -32,7 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetirementControllerIT {
 
-    private static final User DEFAULT_USER = new User(3L, "john", Country.BR);
+    private User defaultUser;
     @Autowired
     private MockMvc mockMvc;
 
@@ -47,15 +49,18 @@ class RetirementControllerIT {
 
     @Autowired
     private UserRepository userRepository;
+    @MockBean
+    private ChatGptService chatGptService;
 
     @BeforeEach
     void setUp() {
+        clearDependencies();
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        userRepository.save(DEFAULT_USER);
+        defaultUser = userRepository.save(new User(null, "john", Country.BR));
     }
 
     @AfterEach
-    void tearDown() {
+    void clearDependencies() {
         retirementRepository.deleteAll();
         userRepository.deleteAll();
     }
@@ -78,7 +83,7 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .build());
         Long id = saved.getId();
 
@@ -97,7 +102,7 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .build());
         Long id = saved.getId();
 
@@ -120,7 +125,7 @@ class RetirementControllerIT {
         RetirementDetail saved = retirementRepository.save(
                 RetirementDetail.builder().lifeExpectation(LocalDate.now().plusYears(50)).retirementDate(LocalDate.now())
                         .incomePerMonthDesired(BigDecimal.TEN)
-                        .userId(DEFAULT_USER.getId())
+                        .userId(defaultUser.getId())
                         .build());
         Long id = saved.getId();
 

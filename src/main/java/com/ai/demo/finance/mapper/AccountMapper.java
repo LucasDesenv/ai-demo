@@ -14,6 +14,6 @@ public interface AccountMapper {
     Account toAccount(AccountDTO accountDTO);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "userId", source = "userId")
+    @Mapping(target = "amountNet", source = "accountDTO.amount")
     Account toAccountToCreate(AccountDTO accountDTO, Long userId);
 }

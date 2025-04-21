@@ -17,7 +17,7 @@ import com.ai.demo.finance.dto.AccountDTO;
 import com.ai.demo.finance.dto.BalanceDTO;
 import com.ai.demo.finance.dto.UserDTO;
 import com.ai.demo.finance.event.EventSource;
-import com.ai.demo.finance.event.account.AccountNetAmountPerUserEvent;
+import com.ai.demo.finance.event.account.AccountEvent;
 import com.ai.demo.finance.event.retirement.RetirementGoalEvent;
 import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.finance.model.Account;
@@ -61,10 +61,10 @@ class AccountServiceTest {
     void test_create_account_success() {
         // Arrange
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
-        AccountDTO dto = new AccountDTO(1L, "my", new BigDecimal("1000"), SAVINGS, "john");
+        AccountDTO dto = new AccountDTO(1L, 2L, "my", new BigDecimal("1000"), SAVINGS);
 
-        when(userService.findByUsername("john")).thenReturn(new UserDTO(2L, "john", Country.BR));
-        when(accountRepository.save(accountCaptor.capture())).then(AdditionalAnswers.returnsFirstArg());
+        when(userService.findById(2L)).thenReturn(new UserDTO(2L, "john", Country.BR));
+        when(accountRepository.saveAndFlush(accountCaptor.capture())).then(AdditionalAnswers.returnsFirstArg());
 
         // Act & Assert
         AccountDTO created = accountService.createAccount(dto);
@@ -74,7 +74,7 @@ class AccountServiceTest {
 
         Account accountCaptorValue = accountCaptor.getValue();
         assertNull(accountCaptorValue.getId());
-        verify(eventPublisher).publishEvent(new AccountNetAmountPerUserEvent(2L, EventSource.ACCOUNT_CREATION));
+        verify(eventPublisher).publishEvent(new AccountEvent(2L, EventSource.ACCOUNT_CREATION));
     }
 
     @Test
@@ -105,7 +105,7 @@ class AccountServiceTest {
     void test_update_account_success() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, null);
+        AccountDTO dto = new AccountDTO(id, 2L, "my", new BigDecimal("2000"), SAVINGS);
 
         when(accountRepository.existsById(id)).thenReturn(true);
         when(accountRepository.save(any(Account.class))).then(AdditionalAnswers.returnsFirstArg());
@@ -119,7 +119,7 @@ class AccountServiceTest {
     void test_update_account_not_found() {
         // Arrange
         Long id = 1L;
-        AccountDTO dto = new AccountDTO(id, "my", new BigDecimal("2000"), SAVINGS, "john");
+        AccountDTO dto = new AccountDTO(id, 2L, "my", new BigDecimal("2000"), SAVINGS);
 
         when(accountRepository.existsById(id)).thenReturn(false);
 
@@ -132,7 +132,7 @@ class AccountServiceTest {
         // Arrange
         Long id = 1L;
 
-        when(accountRepository.existsById(id)).thenReturn(true);
+        when(accountRepository.findById(id)).thenReturn(Optional.of(new Account()));
 
         // Act & Assert
         assertDoesNotThrow(() -> accountService.deleteAccount(id));
@@ -143,7 +143,7 @@ class AccountServiceTest {
         // Arrange
         Long id = 1L;
 
-        when(accountRepository.existsById(id)).thenReturn(false);
+        when(accountRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NotFoundResourceException.class, () -> accountService.deleteAccount(id));
@@ -171,7 +171,7 @@ class AccountServiceTest {
         assertEquals(updatedAccount.getAmount(), result.amount());
         verify(accountRepository).save(any(Account.class));
         verify(historyRepository).save(any(AccountHistory.class));
-        verify(eventPublisher).publishEvent(new AccountNetAmountPerUserEvent(userId, EventSource.DEPOSIT));
+        verify(eventPublisher).publishEvent(new AccountEvent(userId, EventSource.DEPOSIT));
     }
 
     @Test
@@ -237,11 +237,12 @@ class AccountServiceTest {
 
         when(userService.findById(userId)).thenReturn(userDTO);
         when(inflationService.fetchLatestMonthlyInflationRateForYearToDate(Country.US)).thenReturn(Optional.empty());
+        when(accountRepository.findAllByUserId(userId)).thenReturn(accounts);
 
         accountService.recalculateNetAmountPerUser(userId);
 
-        verify(accountRepository, never()).saveAll(accounts);
-        verify(eventPublisher, never()).publishEvent(any(RetirementGoalEvent.class));
+        verify(accountRepository).saveAll(accounts);
+        verify(eventPublisher).publishEvent(any(RetirementGoalEvent.class));
     }
 
 }
