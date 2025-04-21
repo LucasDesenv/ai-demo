@@ -17,3 +17,6 @@ insert into user_languages (user_profile_id,language) values (1,'portuguese');
 insert into user_languages (user_profile_id,language) values (1,'spanish');
 
 insert into user_preferred_climates (user_profile_id,climate) values (1,'spring');
+
+insert into user_passports (user_profile_id,country_code) values (1,'ES');
+insert into user_passports (user_profile_id,country_code) values (1,'BR');

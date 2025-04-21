@@ -51,6 +51,11 @@ public class UserProfile {
     @Column(name = "language")
     private List<String> languagesSpoken;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_passports", joinColumns = @JoinColumn(name = "user_profile_id"))
+    @Column(name = "country_code")
+    private List<String> passports;
+
     private String travelStyle;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

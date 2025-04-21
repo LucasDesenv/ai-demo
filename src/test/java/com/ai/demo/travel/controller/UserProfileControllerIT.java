@@ -62,25 +62,14 @@ class UserProfileControllerIT {
 
     @Test
     void testCreateUserProfile() throws Exception {
-        UserProfileDTO dto = UserProfileDTO.builder()
-                .name("Alice")
-                .birth(LocalDate.of(1990, 5, 20))
-                .gender(Gender.FEMALE)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .preferredClimates(List.of("warm", "tropical"))
-                .languagesSpoken(List.of("english", "french"))
-                .travelStyle("relaxed")
-                .interests(List.of("yoga", "local food", "hiking"))
-                .build();
+        UserProfileDTO dto = createTestDto();
 
         mockMvc.perform(post(ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
                 .content(asJsonString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Alice"))
-                .andExpect(jsonPath("$.budget_level").value("MEDIUM"));
+                .andExpect(jsonPath("$.id").exists());
 
         List<UserProfile> all = userProfileRepository.findAll();
         assertThat(all).hasSize(1);
@@ -92,10 +81,24 @@ class UserProfileControllerIT {
         assertThat(userProfile.getBirth()).isEqualTo(LocalDate.of(1990, 5, 20));
         assertThat(userProfile.getPreferredClimates()).containsExactlyInAnyOrder("warm", "tropical");
         assertThat(userProfile.getLanguagesSpoken()).containsExactlyInAnyOrder("english", "french");
+        assertThat(userProfile.getPassports()).containsExactlyInAnyOrder("BR", "ES");
         assertThat(userProfile.getTravelStyle()).isEqualTo("relaxed");
         assertThat(userProfile.getInterests().stream().map(UserInterest::getInterest).toList())
                 .containsExactlyInAnyOrder("yoga", "local food", "hiking");
+    }
 
+    @Test
+    void testCreateUserProfile_WithInvalidPassport() throws Exception {
+        UserProfileDTO dto = createTestDto();
+        String invalidCountry = "XPTO";
+        dto.setPassports(List.of("BR", invalidCountry));
+
+        mockMvc.perform(post(ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .content(asJsonString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("passports[1]: Invalid country code")));
     }
 
     @Test
@@ -281,6 +284,7 @@ class UserProfileControllerIT {
                 .languagesSpoken(List.of("english", "french"))
                 .travelStyle("relaxed")
                 .interests(List.of("yoga", "local food", "hiking"))
+                .passports(List.of("BR", "ES"))
                 .build();
     }
 

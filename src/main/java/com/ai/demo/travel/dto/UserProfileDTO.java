@@ -2,7 +2,9 @@ package com.ai.demo.travel.dto;
 
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
+import com.ai.demo.travel.validator.ValidCountryCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -39,4 +41,8 @@ public class UserProfileDTO {
     private String travelStyle;
     @NotEmpty
     private List<String> interests;
+    @Valid
+    @JsonProperty("passports")
+    private List<@ValidCountryCode String> passports;
+
 }
