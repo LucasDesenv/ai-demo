@@ -5,7 +5,6 @@ import com.ai.demo.travel.mapper.UserRecommendationMapper;
 import com.ai.demo.travel.model.UserProfile;
 import com.ai.demo.travel.model.UserRecommendation;
 import com.ai.demo.travel.model.repository.UserRecommendationRepository;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
@@ -27,12 +26,11 @@ public class UserRecommendationService {
                         .id(userProfileId)
                         .build())
                 .content(recommendDestinations)
-                .recommendedAt(LocalDateTime.now())
                 .build();
 
-        recommendationRepository.save(recommendation);
+        UserRecommendation saved = recommendationRepository.save(recommendation);
 
-        return MAPPER.toDTO(recommendation);
+        return MAPPER.toDTO(saved);
     }
 
     public List<UserRecommendationDTO> findAllByUserId(Long userProfileId) {

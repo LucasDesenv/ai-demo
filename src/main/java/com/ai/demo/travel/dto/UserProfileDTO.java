@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,5 +45,7 @@ public class UserProfileDTO {
     @Valid
     @JsonProperty("passports")
     private List<@ValidCountryCode String> passports;
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
 }

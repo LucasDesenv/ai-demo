@@ -88,7 +88,8 @@ class UserRecommendationControllerIT {
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
-                .andExpect(jsonPath("$.content").value("Mocked chatgpt"));
+                .andExpect(jsonPath("$.content").value("Mocked chatgpt"))
+                .andExpect(jsonPath("$.created_at").exists());
 
         // Retrieve saved recommendation(s)
         mockMvc.perform(get(ENDPOINT + "/" + userId)

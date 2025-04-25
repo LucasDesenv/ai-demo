@@ -69,7 +69,8 @@ class UserProfileControllerIT {
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
                 .content(asJsonString(dto)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists());
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.created_at").exists());
 
         List<UserProfile> all = userProfileRepository.findAll();
         assertThat(all).hasSize(1);

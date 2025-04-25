@@ -56,7 +56,7 @@ class UserRecommendationServiceTest {
                 .id(1L)
                 .userProfile(UserProfile.builder().id(userId).build())
                 .content("Lisbon, Portugal is recommended for culture lovers.")
-                .recommendedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         when(recommendationRepository.findByUserProfileId(userId)).thenReturn(List.of(rec));
