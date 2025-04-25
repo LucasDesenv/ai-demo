@@ -1,8 +1,8 @@
 package com.ai.demo.travel.controller;
 
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_API_V1;
-import static com.ai.demo.travel.model.controller.UserRecommendationController.ENDPOINT;
+import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
+import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_API_V1;
+import static com.ai.demo.travel.controller.UserRecommendationController.ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

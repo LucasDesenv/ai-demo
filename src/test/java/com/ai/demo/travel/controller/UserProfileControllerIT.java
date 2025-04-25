@@ -1,8 +1,8 @@
 package com.ai.demo.travel.controller;
 
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_API_V1;
-import static com.ai.demo.travel.model.controller.UserProfileController.ENDPOINT;
+import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
+import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_API_V1;
+import static com.ai.demo.travel.controller.UserProfileController.ENDPOINT;
 import static org.assertj.core.api.Assertions.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

@@ -1,7 +1,4 @@
-package com.ai.demo.travel.model.controller;
-
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
-import static com.ai.demo.travel.model.controller.TravelApiVersion.TRAVEL_API_V1;
+package com.ai.demo.travel.controller;
 
 import com.ai.demo.travel.dto.UserRecommendationDTO;
 import com.ai.demo.travel.service.UserRecommendationService;
@@ -16,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(headers = {TRAVEL_ACCEPT_VERSION + "=" + TRAVEL_API_V1})
+@RequestMapping(headers = {TravelApiVersion.TRAVEL_ACCEPT_VERSION + "=" + TravelApiVersion.TRAVEL_API_V1})
 @Tag(name = "User Recommendation", description = "APIs related to User Recommendations")
 public class UserRecommendationController {
 
