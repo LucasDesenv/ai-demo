@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(headers = {TRAVEL_ACCEPT_VERSION + "=" + TRAVEL_API_V1})
-@Tag(name = "Travel Recommendation", description = "APIs related to Travel Recommendations")
+@Tag(name = "Travel Assistance", description = "APIs related to AI Travel")
 public class TravelAssistanceController {
 
     public static final String ENDPOINT = "/travel";

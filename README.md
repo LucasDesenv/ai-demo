@@ -24,6 +24,9 @@ Playground Project to know how far a person is to achieving their retirement.
 - 
 
 ### Requirements for Traveling module
+- Create User Profile
+- Recommend Destinations based on User Profile
+- Inform about requirements based on Destination
 
 
 ### IMF (International Monetary Fund) APIs

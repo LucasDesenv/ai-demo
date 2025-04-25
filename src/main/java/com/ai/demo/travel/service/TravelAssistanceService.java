@@ -10,6 +10,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+/**
+ * GPT-3.5-turbo uses the cl100k_base tokenizer. On average: 1 token ≈ 3/4 word,
+ * so 100 tokens ≈ 75 words. Formula: total chars / 4 💰 OpenAI
+ * GPT-3.5-turbo-0125 Pricing (as of April 2025) Input tokens: $0.0005 per 1,000
+ * tokens Output tokens: $0.0015 per 1,000 tokens​
+ */
 @Service
 @AllArgsConstructor
 public class TravelAssistanceService {
@@ -21,6 +27,13 @@ public class TravelAssistanceService {
         return chatGptService.ask(buildPromptForRecommendations(userProfile));
     }
 
+    /**
+     * Total input tokens: 950 length / 4 = 240 tokens Input cost: (240 tokens /
+     * 1,000) × $0.0005 = $0.00012 Estimated output tokens: ~400 Output cost: (400
+     * tokens / 1,000) × $0.0015 = $0.0006 Estimated Total Cost: $0.00072
+     * @param profile
+     * @return
+     */
     private String buildPromptForRecommendations(UserProfileDTO profile) {
         int age = Period.between(profile.getBirth(), LocalDate.now()).getYears();
         return String.format(
@@ -70,6 +83,16 @@ public class TravelAssistanceService {
         return chatGptService.ask(prompt);
     }
 
+    /**
+     * Total input tokens: 1150 length / 4 = 290 tokens Input cost: (290 tokens /
+     * 1,000) × $0.0005 = $0.000145 Total output tokens: ~450 Output cost: (450
+     * tokens / 1,000) × $0.0015 = $0.000675 Estimated Total cost: $0.000145 +
+     * $0.000675 = $0.00082
+     * @param userProfile
+     * @param countryDestination
+     * @param travelAssistanceRequestDTO
+     * @return
+     */
     private String buildPromptForRequirements(UserProfileDTO userProfile,
             String countryDestination, TravelAssistanceRequestDTO travelAssistanceRequestDTO) {
 
