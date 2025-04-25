@@ -1,11 +1,14 @@
 package com.ai.demo.travel.service;
 
+import com.ai.demo.travel.dto.UserProfileDTO;
 import com.ai.demo.travel.dto.UserRecommendationDTO;
 import com.ai.demo.travel.mapper.UserRecommendationMapper;
 import com.ai.demo.travel.model.UserProfile;
 import com.ai.demo.travel.model.UserRecommendation;
 import com.ai.demo.travel.model.repository.UserRecommendationRepository;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
@@ -17,9 +20,16 @@ public class UserRecommendationService {
     private static final UserRecommendationMapper MAPPER = Mappers.getMapper(UserRecommendationMapper.class);
 
     private final TravelAssistanceService travelAssistanceService;
+    private final UserProfileService userProfileService;
     private final UserRecommendationRepository recommendationRepository;
 
     public UserRecommendationDTO recommend(Long userProfileId) {
+        Optional<UserRecommendation> latest = recommendationRepository.findTopByUserProfileIdOrderByCreatedAtDesc(userProfileId);
+
+        if (latest.isPresent() && !userProfileHasChanged(userProfileId, latest.get())) {
+            return MAPPER.toDTO(latest.get()); // reuse latest one
+        }
+
         String recommendDestinations = travelAssistanceService.recommendDestinations(userProfileId);
         UserRecommendation recommendation = UserRecommendation.builder()
                 .userProfile(UserProfile.builder()
@@ -31,6 +41,12 @@ public class UserRecommendationService {
         UserRecommendation saved = recommendationRepository.save(recommendation);
 
         return MAPPER.toDTO(saved);
+    }
+
+    private boolean userProfileHasChanged(Long userProfileId, UserRecommendation latest) {
+        UserProfileDTO profileDto = userProfileService.findById(userProfileId);
+        LocalDateTime lastModified = profileDto.getLastModifiedAt();
+        return lastModified.isAfter(latest.getCreatedAt());
     }
 
     public List<UserRecommendationDTO> findAllByUserId(Long userProfileId) {

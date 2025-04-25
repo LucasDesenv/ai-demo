@@ -47,5 +47,7 @@ public class UserProfileDTO {
     private List<@ValidCountryCode String> passports;
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
+    @JsonProperty("last_modified_at")
+    private LocalDateTime lastModifiedAt;
 
 }
