@@ -1,4 +1,4 @@
-package com.ai.demo.finance.config;
+package com.ai.demo.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

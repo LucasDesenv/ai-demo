@@ -1,4 +1,4 @@
-package com.ai.demo.finance.config;
+package com.ai.demo.config;
 
 import com.ai.demo.finance.model.repository.cache.RetirementGoalRepository;
 import org.springframework.beans.factory.annotation.Value;

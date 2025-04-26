@@ -2,11 +2,15 @@ package com.ai.demo.finance.controller;
 
 import static com.ai.demo.finance.controller.ApiVersion.ACCEPT_VERSION;
 import static com.ai.demo.finance.controller.ApiVersion.API_V1;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ai.demo.BaseControllerIT;
 import com.ai.demo.finance.ai.ChatGptService;
-import com.ai.demo.finance.config.RedisConfigForIntegrationTest;
 import com.ai.demo.finance.dto.RetirementDetailDTO;
 import com.ai.demo.finance.model.RetirementDetail;
 import com.ai.demo.finance.model.User;
@@ -19,20 +23,14 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@SpringBootTest(classes = {RedisConfigForIntegrationTest.class})
-@AutoConfigureMockMvc
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RetirementControllerIT {
+class RetirementControllerIT extends BaseControllerIT {
 
     private User defaultUser;
     @Autowired

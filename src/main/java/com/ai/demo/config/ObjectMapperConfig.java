@@ -1,4 +1,4 @@
-package com.ai.demo.finance.config;
+package com.ai.demo.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;

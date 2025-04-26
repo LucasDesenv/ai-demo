@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ai.demo.BaseControllerIT;
 import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.travel.dto.UserProfileDTO;
 import com.ai.demo.travel.model.BudgetLevel;

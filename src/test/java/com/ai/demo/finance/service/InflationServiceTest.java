@@ -9,7 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ai.demo.finance.config.ObjectMapperConfig;
+import com.ai.demo.config.ObjectMapperConfig;
 import com.ai.demo.finance.event.account.AccountEvent;
 import com.ai.demo.finance.model.User;
 import com.ai.demo.finance.model.cache.InflationRate;

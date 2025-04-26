@@ -1,10 +1,13 @@
-package com.ai.demo.travel.controller;
+package com.ai.demo;
 
 import io.zonky.test.db.postgres.junit5.EmbeddedPostgresExtension;
 import io.zonky.test.db.postgres.junit5.PreparedDbExtension;
+import java.io.IOException;
 import java.sql.Connection;
 import javax.sql.DataSource;
 import lombok.NonNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +17,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.TestPropertySourceUtils;
+import redis.embedded.RedisServer;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -23,6 +27,18 @@ public class BaseControllerIT {
 
     @RegisterExtension
     public static PreparedDbExtension epg = EmbeddedPostgresExtension.preparedDatabase(BaseControllerIT::initDatabase);
+    private static RedisServer redisServer;
+
+    @BeforeAll
+    public static void init() throws IOException {
+        redisServer = new RedisServer(8083);
+        redisServer.start();
+    }
+
+    @AfterAll
+    public static void cleanUp() throws IOException {
+        redisServer.stop();
+    }
 
     public static class ControllerTestInitializer
             implements

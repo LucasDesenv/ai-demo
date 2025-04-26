@@ -1,4 +1,4 @@
-package com.ai.demo.finance.config;
+package com.ai.demo.config;
 
 import com.ai.demo.finance.model.repository.RetirementRepository;
 import com.ai.demo.travel.model.repository.UserProfileRepository;
