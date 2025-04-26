@@ -3,6 +3,7 @@ package com.ai.demo.travel.controller;
 import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_ACCEPT_VERSION;
 import static com.ai.demo.travel.controller.TravelApiVersion.TRAVEL_API_V1;
 import static com.ai.demo.travel.controller.TravelPlanController.ENDPOINT;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -99,4 +100,72 @@ class TravelPlanControllerIT {
                 .andExpect(jsonPath("$[0].destination_countries[0]").value("IT"))
                 .andExpect(jsonPath("$[0].destination_countries").value(Matchers.hasSize(1)));
     }
+
+    @Test
+    void testCreateTravelPlan_missingDestinationCountry_shouldReturnBadRequest() throws Exception {
+        TravelPlanDTO dto = TravelPlanDTO.builder()
+                .userProfileId(userId)
+                .destinationCountries(Collections.emptyList()) // Missing countries
+                .destinationCities(Collections.singletonList("Rome"))
+                .startDate(LocalDate.of(2025, 7, 1))
+                .endDate(LocalDate.of(2025, 7, 10))
+                .tripType(TripType.VACATION)
+                .notes("Summer escape")
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post(ENDPOINT.replace("{userId}", String.valueOf(userId)))
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("destinationCountries: must not be empty")));
+    }
+
+    @Test
+    void testCreateTravelPlan_endDateBeforeStartDate_shouldReturnBadRequest() throws Exception {
+        TravelPlanDTO dto = TravelPlanDTO.builder()
+                .userProfileId(userId)
+                .destinationCountries(Collections.singletonList("FR"))
+                .destinationCities(Collections.singletonList("Paris"))
+                .startDate(LocalDate.of(2025, 7, 10))
+                .endDate(LocalDate.of(2025, 7, 1)) // End before start
+                .tripType(TripType.VACATION)
+                .notes("Backwards trip")
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post(ENDPOINT.replace("{userId}", String.valueOf(userId)))
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("Start date cannot be after end date")));
+    }
+
+    @Test
+    void testCreateTravelPlan_invalidUser_shouldReturnBadRequest() throws Exception {
+        Long invalidUserId = 999999L; // Assuming this user does not exist
+
+        TravelPlanDTO dto = TravelPlanDTO.builder()
+                .userProfileId(invalidUserId)
+                .destinationCountries(Collections.singletonList("JP"))
+                .destinationCities(Collections.singletonList("Tokyo"))
+                .startDate(LocalDate.of(2025, 5, 1))
+                .endDate(LocalDate.of(2025, 5, 15))
+                .tripType(TripType.VACATION)
+                .notes("Explore Japan")
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post(ENDPOINT.replace("{userId}", String.valueOf(invalidUserId)))
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
 }

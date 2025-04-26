@@ -3,6 +3,7 @@ package com.ai.demo.travel.controller;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.service.TravelPlanService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class TravelPlanController {
     private final TravelPlanService service;
 
     @PostMapping(value = ENDPOINT)
-    public ResponseEntity<TravelPlanDTO> create(@PathVariable Long userId, @RequestBody TravelPlanDTO dto) {
+    public ResponseEntity<TravelPlanDTO> create(@PathVariable Long userId, @Valid @RequestBody TravelPlanDTO dto) {
         return ResponseEntity.ok(service.save(userId, dto));
     }
 
