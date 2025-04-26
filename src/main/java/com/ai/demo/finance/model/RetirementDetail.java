@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class RetirementDetail {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "income_per_month_desired")
     private BigDecimal incomePerMonthDesired;

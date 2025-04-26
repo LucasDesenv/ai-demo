@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AccountHistory {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private BigDecimal amount;
     private ZonedDateTime date;

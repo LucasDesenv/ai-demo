@@ -42,9 +42,16 @@ Playground Project to know how far a person is to achieving their retirement.
 * IntelliJ IDE or similar
 * Java SDK 17
 * Apache Maven 3.6.3 or newer
-* 
+* Docker + Docker Compose plugin
+
 ### Code Formatting
 In order to format the code the following command can be used:
 ```bash
 mvn spotless:apply
 ```
+
+### Developing or testing source code in local
+
+1. Check all images are in the latest version executing `docker compose pull`
+2. Start all the technological components using the docker `docker compose -f docker-compose.yml up`
+3. Run the Main class.

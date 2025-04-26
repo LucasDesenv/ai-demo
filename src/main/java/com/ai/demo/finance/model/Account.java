@@ -5,6 +5,8 @@ import com.ai.demo.finance.model.cache.InflationRate;
 import com.ai.demo.finance.model.enums.AccountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,7 +28,7 @@ import lombok.NoArgsConstructor;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(length = 100)
     private String description;
@@ -35,6 +37,7 @@ public class Account {
     @Column(name = "amount_net")
     private BigDecimal amountNet;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AccountType type;
     @Column(nullable = false)
     @Builder.Default
