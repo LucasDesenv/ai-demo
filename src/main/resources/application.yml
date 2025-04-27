@@ -54,4 +54,4 @@ imf:
 
 openai:
   api:
-    key: blablabla
+    key: ${OPEN_API_KEY:fake_open_api_key}

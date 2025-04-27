@@ -117,12 +117,12 @@ class TravelAssistanceServiceTest {
                 You are a travel advisor helping a solo traveler understand visa and entry requirements.
 
                 The traveler holds the following passports: US, DE
-                They are planning to visit: TH
+                They are planning to visit: Thailand
                 Intended length of stay: 20 days
 
                 Please answer the following:
 
-                1. Does the traveler need a visa to visit TH with any of their passports?
+                1. Does the traveler need a visa to visit Thailand with any of their passports?
                 2. Which passport offers the most favorable entry (e.g. visa-free or visa on arrival)?
                 3. Are there any other entry requirements the traveler should be aware of? Include:
                    - Required or recommended vaccinations

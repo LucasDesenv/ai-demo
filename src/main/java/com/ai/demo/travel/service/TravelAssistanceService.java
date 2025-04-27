@@ -3,6 +3,7 @@ package com.ai.demo.travel.service;
 import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.travel.dto.TravelAssistanceRequestDTO;
 import com.ai.demo.travel.dto.UserProfileDTO;
+import com.ai.demo.utils.CountryCodesUtil;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -65,7 +66,7 @@ public class TravelAssistanceService {
                 profile.getTravelStyle());
     }
 
-    public String requirements(String countryDestination, TravelAssistanceRequestDTO travelAssistanceRequestDTO) {
+    public String requirements(String countryCodeDestination, TravelAssistanceRequestDTO travelAssistanceRequestDTO) {
         UserProfileDTO userProfile = userProfileService.findById(travelAssistanceRequestDTO.getUserId());
 
         List<String> passports = userProfile.getPassports();
@@ -74,11 +75,11 @@ public class TravelAssistanceService {
             return "The user does not hold any passport. User needs to provide at least their ID as passport.";
         }
 
-        if (passports.contains(countryDestination)) {
-            return String.format("The user holds a passport of the destination: %s", countryDestination);
+        if (passports.contains(countryCodeDestination)) {
+            return String.format("The user holds a passport of the destination: %s", countryCodeDestination);
         }
 
-        String prompt = buildPromptForRequirements(userProfile, countryDestination, travelAssistanceRequestDTO);
+        String prompt = buildPromptForRequirements(userProfile, countryCodeDestination, travelAssistanceRequestDTO);
 
         return chatGptService.ask(prompt);
     }
@@ -89,14 +90,15 @@ public class TravelAssistanceService {
      * tokens / 1,000) × $0.0015 = $0.000675 Estimated Total cost: $0.000145 +
      * $0.000675 = $0.00082
      * @param userProfile
-     * @param countryDestination
+     * @param countryCodeDestination
      * @param travelAssistanceRequestDTO
      * @return
      */
     private String buildPromptForRequirements(UserProfileDTO userProfile,
-            String countryDestination, TravelAssistanceRequestDTO travelAssistanceRequestDTO) {
+            String countryCodeDestination, TravelAssistanceRequestDTO travelAssistanceRequestDTO) {
 
         Integer numberOfStayingDays = travelAssistanceRequestDTO.getNumberOfStayingDays();
+        String countryName = CountryCodesUtil.ISO_COUNTRIES.get(countryCodeDestination);
 
         return String.format("""
                 You are a travel advisor helping a solo traveler understand visa and entry requirements.
@@ -119,7 +121,7 @@ public class TravelAssistanceService {
                 Assume this is for tourism only.
                 """,
                 String.join(", ", userProfile.getPassports()),
-                countryDestination,
-                numberOfStayingDays, countryDestination);
+                countryName,
+                numberOfStayingDays, countryName);
     }
 }
