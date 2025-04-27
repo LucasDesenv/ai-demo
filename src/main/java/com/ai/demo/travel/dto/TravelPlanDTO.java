@@ -5,6 +5,7 @@ import com.ai.demo.travel.validator.ValidCountryCode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,13 +26,14 @@ public class TravelPlanDTO {
     @JsonProperty("user_profile_id")
     private Long userProfileId;
 
-    @Valid
-    @JsonProperty("destination_countries")
-    @NotEmpty
-    private List<@ValidCountryCode String> destinationCountries;
+    @JsonProperty("origin_country")
+    @NotBlank
+    @ValidCountryCode
+    private String originCountry;
 
-    @JsonProperty("destination_cities")
-    private List<String> destinationCities;
+    @NotEmpty
+    @Valid
+    private List<DestinationDTO> destinations;
 
     @JsonProperty("start_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -44,6 +46,7 @@ public class TravelPlanDTO {
     @JsonProperty("trip_type")
     @NotNull
     private TripType tripType;
+
     @Size(max = 1000)
     private String notes;
 }

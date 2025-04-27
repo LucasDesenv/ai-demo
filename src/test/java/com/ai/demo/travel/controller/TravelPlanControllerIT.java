@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ai.demo.BaseControllerIT;
+import com.ai.demo.travel.dto.DestinationDTO;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
@@ -68,11 +69,11 @@ class TravelPlanControllerIT extends BaseControllerIT {
     void testCreateAndGetTravelPlan() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
-                .destinationCountries(Collections.singletonList("IT"))
-                .destinationCities(Collections.singletonList("Rome"))
+                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Rome").country("IT").build()))
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 7, 10))
                 .tripType(TripType.VACATION)
+                .originCountry("BR")
                 .notes("Summer escape")
                 .build();
 
@@ -84,27 +85,28 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user_profile_id").value(userId))
-                .andExpect(jsonPath("$.destination_cities").value(Matchers.hasSize(1)))
-                .andExpect(jsonPath("$.destination_cities[0]").value("Rome"));
+                .andExpect(jsonPath("$.destinations").value(Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.destinations[0].staying_days").value(15L))
+                .andExpect(jsonPath("$.destinations[0].city").value("Rome"))
+                .andExpect(jsonPath("$.destinations[0].country").value("IT"));
 
         mockMvc.perform(get(ENDPOINT.replace("{userId}", String.valueOf(userId)))
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(Matchers.hasSize(1)))
-                .andExpect(jsonPath("$[0].destination_countries[0]").value("IT"))
-                .andExpect(jsonPath("$[0].destination_countries").value(Matchers.hasSize(1)));
+                .andExpect(jsonPath("$[0].destinations[0].staying_days").value(15L))
+                .andExpect(jsonPath("$[0].destinations[0].country").value("IT"))
+                .andExpect(jsonPath("$[0].destinations").value(Matchers.hasSize(1)));
     }
 
     @Test
-    void testCreateTravelPlan_missingDestinationCountry_shouldReturnBadRequest() throws Exception {
+    void testCreateTravelPlan_missingRequiredFields_shouldReturnBadRequest() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
-                .destinationCountries(Collections.emptyList()) // Missing countries
-                .destinationCities(Collections.singletonList("Rome"))
+                .destinations(Collections.emptyList())
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 7, 10))
-                .tripType(TripType.VACATION)
                 .notes("Summer escape")
                 .build();
 
@@ -115,18 +117,21 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(containsString("destinationCountries: must not be empty")));
+                .andExpect(jsonPath("$.message").value(containsString("destinations: must not be empty")))
+                .andExpect(jsonPath("$.message").value(containsString("originCountry: must not be blank")))
+                .andExpect(jsonPath("$.message").value(containsString("originCountry: Invalid country code")))
+                .andExpect(jsonPath("$.message").value(containsString("tripType: must not be null")));
     }
 
     @Test
     void testCreateTravelPlan_endDateBeforeStartDate_shouldReturnBadRequest() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
-                .destinationCountries(Collections.singletonList("FR"))
-                .destinationCities(Collections.singletonList("Paris"))
+                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
                 .startDate(LocalDate.of(2025, 7, 10))
                 .endDate(LocalDate.of(2025, 7, 1)) // End before start
                 .tripType(TripType.VACATION)
+                .originCountry("BR")
                 .notes("Backwards trip")
                 .build();
 
@@ -146,8 +151,7 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(invalidUserId)
-                .destinationCountries(Collections.singletonList("JP"))
-                .destinationCities(Collections.singletonList("Tokyo"))
+                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
                 .startDate(LocalDate.of(2025, 5, 1))
                 .endDate(LocalDate.of(2025, 5, 15))
                 .tripType(TripType.VACATION)

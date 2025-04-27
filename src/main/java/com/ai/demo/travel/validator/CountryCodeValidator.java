@@ -8,6 +8,9 @@ public class CountryCodeValidator implements ConstraintValidator<ValidCountryCod
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return false;
+        }
         return CountryCodesUtil.ISO_COUNTRIES.containsKey(value);
     }
 

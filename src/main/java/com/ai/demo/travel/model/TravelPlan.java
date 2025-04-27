@@ -1,12 +1,15 @@
 package com.ai.demo.travel.model;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,8 +33,11 @@ public class TravelPlan {
 
     private Long userProfileId;
 
-    private List<String> destinationCountries;
-    private List<String> destinationCities;
+    private String originCountry;
+
+    @ElementCollection
+    @CollectionTable(name = "travel_plan_destinations", joinColumns = @JoinColumn(name = "travel_plan_id"))
+    public List<Destination> destinations;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate startDate;

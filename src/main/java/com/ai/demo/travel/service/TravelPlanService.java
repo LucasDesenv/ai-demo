@@ -1,6 +1,7 @@
 package com.ai.demo.travel.service;
 
 import com.ai.demo.finance.exception.InvalidOperationException;
+import com.ai.demo.finance.exception.NotFoundResourceException;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.mapper.TravelPlanMapper;
 import com.ai.demo.travel.model.TravelPlan;
@@ -36,5 +37,11 @@ public class TravelPlanService {
         return repository.findByUserProfileId(userId).stream()
                 .map(mapper::toDTO)
                 .toList();
+    }
+
+    public TravelPlanDTO findById(Long travelPlanId) {
+        TravelPlan travelPlan = repository.findById(travelPlanId)
+                .orElseThrow(() -> new NotFoundResourceException("Travel plan %d not found".formatted(travelPlanId)));
+        return mapper.toDTO(travelPlan);
     }
 }

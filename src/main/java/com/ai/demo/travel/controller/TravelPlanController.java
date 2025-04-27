@@ -19,7 +19,7 @@ public class TravelPlanController {
 
     private final TravelPlanService service;
 
-    @PostMapping(value = ENDPOINT)
+    @PostMapping(ENDPOINT)
     public ResponseEntity<TravelPlanDTO> create(@PathVariable Long userId, @Valid @RequestBody TravelPlanDTO dto) {
         return ResponseEntity.ok(service.save(userId, dto));
     }
