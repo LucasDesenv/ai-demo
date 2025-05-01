@@ -4,6 +4,7 @@ import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.service.TravelPlanService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,8 @@ public class TravelPlanController {
 
     @PostMapping(ENDPOINT)
     public ResponseEntity<TravelPlanDTO> create(@PathVariable Long userId, @Valid @RequestBody TravelPlanDTO dto) {
-        return ResponseEntity.ok(service.save(userId, dto));
+        TravelPlanDTO created = service.save(userId, dto);
+        return ResponseEntity.created(URI.create(ENDPOINT.replace("{userId}", userId.toString()))).body(created);
     }
 
     @GetMapping(ENDPOINT)

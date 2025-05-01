@@ -3,7 +3,12 @@ package com.ai.demo.travel.service;
 import static com.ai.demo.utils.CountryCodesUtil.ISO_COUNTRIES;
 
 import com.ai.demo.finance.ai.ChatGptService;
+import com.ai.demo.finance.ai.PromptLoader;
+import com.ai.demo.finance.exception.AICommunicationException;
+import com.ai.demo.finance.exception.AIParsingException;
 import com.ai.demo.finance.exception.InvalidOperationException;
+import com.ai.demo.finance.exception.NotFoundResourceException;
+import com.ai.demo.travel.dto.AIBudgetResponse;
 import com.ai.demo.travel.dto.BudgetEstimationDTO;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
@@ -12,16 +17,18 @@ import com.ai.demo.travel.mapper.BudgetEstimationMapper;
 import com.ai.demo.travel.model.BudgetEstimation;
 import com.ai.demo.travel.model.BudgetEstimationBreakdown;
 import com.ai.demo.travel.model.repository.BudgetEstimationRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,29 +40,34 @@ public class BudgetEstimationService {
     private final TravelPlanService travelPlanService;
     private final ChatGptService chatGptService;
     private final BudgetEstimationRepository budgetEstimationRepository;
+    private final ObjectMapper objectMapper;
 
-    public BudgetEstimationDTO estimateBudget(Long userId, Long travelPlanId) {
-        TravelPlanDTO travelPlan = travelPlanService.findById(travelPlanId);
+    private record DestinationsDetected(Map<Long, BudgetEstimationBreakdown> breakdownsPerDestination,
+            List<TravelPlanDestinationDTO> destinationsToUpdate, List<TravelPlanDestinationDTO> freshDestinations) {
+    }
+
+    @Transactional
+    public BudgetEstimationDTO estimateBudget(Long travelPlanId) {
+        var travelPlan = travelPlanService.findById(travelPlanId);
         validateTravelPlanIsReady(travelPlan);
-        UserProfileDTO userProfile = userProfileService.findById(userId);
 
-        Optional<BudgetEstimation> optionalBudgetEstimation = budgetEstimationRepository.findByTravelPlanId(travelPlanId);
+        var optionalBudgetEstimation = budgetEstimationRepository.findByTravelPlanId(travelPlanId);
 
         if (optionalBudgetEstimation.isPresent()) {
-            BudgetEstimation updatedBudgetEstimation = updateBudgetEstimation(travelPlanId, optionalBudgetEstimation.get(), travelPlan,
-                    userProfile);
-
+            var updatedBudgetEstimation = updateBudgetEstimation(travelPlanId, optionalBudgetEstimation.get(), travelPlan);
             return MAPPER.toDTO(updatedBudgetEstimation);
         }
 
-        BudgetEstimation newBudgetEstimation = createBudgetEstimation(travelPlanId, userProfile, travelPlan);
+        var newBudgetEstimation = createBudgetEstimation(travelPlanId, travelPlan);
 
         return MAPPER.toDTO(newBudgetEstimation);
     }
 
-    private BudgetEstimation createBudgetEstimation(Long travelPlanId, UserProfileDTO userProfile, TravelPlanDTO travelPlan) {
-        List<BudgetEstimationBreakdown> breakdowns = createBudgetEstimationBreakDownsFromAI(userProfile, travelPlan, travelPlan.getDestinations());
-        BudgetEstimation budgetEstimation = BudgetEstimation.builder()
+    private BudgetEstimation createBudgetEstimation(Long travelPlanId, TravelPlanDTO travelPlan) {
+        var userProfile = userProfileService.findById(travelPlan.getUserProfileId());
+
+        var breakdowns = createBudgetEstimationBreakDownsFromAI(userProfile, travelPlan, travelPlan.getDestinations());
+        var budgetEstimation = BudgetEstimation.builder()
                 .travelPlanId(travelPlanId)
                 .breakdowns(breakdowns)
                 .build();
@@ -63,10 +75,34 @@ public class BudgetEstimationService {
         return budgetEstimationRepository.save(budgetEstimation);
     }
 
-    private BudgetEstimation updateBudgetEstimation(Long travelPlanId, BudgetEstimation existingBudget, TravelPlanDTO travelPlan,
-            UserProfileDTO userProfile) {
+    private BudgetEstimation updateBudgetEstimation(Long travelPlanId, BudgetEstimation existingBudget, TravelPlanDTO travelPlan) {
         validateIfBudgetEstimationCanBeUpdated(travelPlanId, existingBudget, travelPlan);
 
+        DestinationsDetected result = detectModifiedOrNewDestinations(existingBudget, travelPlan);
+
+        if (result.destinationsToUpdate().isEmpty() && result.freshDestinations().isEmpty()) {
+            return existingBudget;
+        }
+
+        updateBreakdowns(existingBudget, travelPlan, result);
+
+        return budgetEstimationRepository.save(existingBudget);
+    }
+
+    private void updateBreakdowns(BudgetEstimation existingBudget, TravelPlanDTO travelPlan, DestinationsDetected destinationsDetected) {
+        UserProfileDTO userProfile = userProfileService.findById(travelPlan.getUserProfileId());
+
+        var newBreakDowns = createBudgetEstimationBreakDownsFromAI(userProfile, travelPlan, destinationsDetected.freshDestinations());
+
+        destinationsDetected.destinationsToUpdate()
+                .forEach(toUpdate -> updateBreakdownFromAI(userProfile,
+                        travelPlan, toUpdate, destinationsDetected.breakdownsPerDestination().get(toUpdate.getId())));
+
+        existingBudget.addNewCosts(newBreakDowns);
+    }
+
+    private static DestinationsDetected detectModifiedOrNewDestinations(BudgetEstimation existingBudget,
+            TravelPlanDTO travelPlan) {
         Map<Long, BudgetEstimationBreakdown> breakdownsPerDestination = existingBudget.getBreakdowns().stream()
                 .collect(Collectors.toMap(BudgetEstimationBreakdown::getTravelPlanDestinationId, Function.identity()));
 
@@ -84,17 +120,7 @@ public class BudgetEstimationService {
             }
         });
 
-        if (destinationsToUpdate.isEmpty() && freshDestinations.isEmpty()) {
-            return existingBudget;
-        }
-
-        List<BudgetEstimationBreakdown> newBreakDowns = createBudgetEstimationBreakDownsFromAI(userProfile, travelPlan, freshDestinations);
-
-        destinationsToUpdate.forEach(des -> updateBudgetEstimationsFromAI(userProfile, travelPlan, des, breakdownsPerDestination.get(des.getId())));
-
-        existingBudget.getBreakdowns().addAll(newBreakDowns);
-
-        return budgetEstimationRepository.save(existingBudget);
+        return new DestinationsDetected(breakdownsPerDestination, destinationsToUpdate, freshDestinations);
     }
 
     private static void validateIfBudgetEstimationCanBeUpdated(Long travelPlanId, BudgetEstimation budgetEstimation,
@@ -106,23 +132,26 @@ public class BudgetEstimationService {
         }
     }
 
-    private void updateBudgetEstimationsFromAI(UserProfileDTO userProfile,
+    private void updateBreakdownFromAI(UserProfileDTO userProfile,
             TravelPlanDTO travelPlan, TravelPlanDestinationDTO destination, BudgetEstimationBreakdown breakdown) {
-        String prompt = buildBudgetPrompt(userProfile, travelPlan, destination);
-        String answer = chatGptService.ask(prompt);
-        breakdown.updateNotes(answer);
+        AIBudgetResponse aiBudgetResponse = askAI(userProfile, travelPlan, destination);
+        breakdown.replaceCosts(aiBudgetResponse);
     }
 
     private List<BudgetEstimationBreakdown> createBudgetEstimationBreakDownsFromAI(UserProfileDTO userProfile,
             TravelPlanDTO travelPlan, List<TravelPlanDestinationDTO> destinations) {
         List<BudgetEstimationBreakdown> breakdowns = new ArrayList<>();
         destinations.forEach(destination -> {
-            String prompt = buildBudgetPrompt(userProfile, travelPlan, destination);
-            String answer = chatGptService.ask(prompt);
-            breakdowns.add(BudgetEstimationBreakdown.builder()
+            AIBudgetResponse aiBudgetResponse = askAI(userProfile, travelPlan, destination);
+            var breakdown = BudgetEstimationBreakdown.builder()
                     .travelPlanDestinationId(destination.getId())
-                    .notes(answer)
-                    .build());
+                    .costs(new ArrayList<>())
+                    .estimation(aiBudgetResponse.getTotalEstimated())
+                    .build();
+
+            breakdown.replaceCosts(aiBudgetResponse);
+
+            breakdowns.add(breakdown);
         });
 
         return breakdowns;
@@ -134,46 +163,35 @@ public class BudgetEstimationService {
         }
     }
 
+    private AIBudgetResponse askAI(UserProfileDTO userProfile, TravelPlanDTO travelPlan, TravelPlanDestinationDTO destination) {
+        String answer = null;
+        try {
+            String prompt = buildBudgetPrompt(userProfile, travelPlan, destination);
+            answer = chatGptService.ask(prompt);
+            return objectMapper.readValue(answer, AIBudgetResponse.class);
+        } catch (JsonProcessingException e) {
+            throw new AIParsingException("Error while parsing AI budget response. Answer received: %s".formatted(answer), e);
+        } catch (Exception e) {
+            throw new AICommunicationException("Unexpected error when requesting AI.", e);
+        }
+    }
+
     private String buildBudgetPrompt(UserProfileDTO userProfile, TravelPlanDTO travelPlan, TravelPlanDestinationDTO destination) {
-        return String.format("""
-                You are a travel budget expert helping a traveler estimate their total trip cost.
-
-                The traveler profile:
-                - Travel style: %s
-                - Budget level: %s
-
-                The trip details:
-                - Country of origin: %s
-                - Destinations: %s
-                - Trip Type: %s
-                - Duration: %d days
-
-                Estimate the following:
-                1. Flight cost (approximate)
-                2. Accommodation per night (based on budget level and travel style)
-                3. Daily food cost
-                4. Local transportation cost (e.g., taxis, buses)
-                5. Entertainment and activity costs (optional tours, attractions)
-
-                Finally, provide:
-                - Total estimated budget = (flight + (accommodation + food + transportation + entertainment) \u00d7 number_of_days)
-
-                Notes:
-                - Keep answers concise and practical.
-                - Give amounts in EUR (€).
-                - Assume solo travel.
-
-                Provide the breakdown and the final estimated total cost.
-                """,
-                userProfile.getTravelStyle(),
-                userProfile.getBudgetLevel(),
-                ISO_COUNTRIES.get(travelPlan.getOriginCountry()),
-                formatDestination(destination),
-                travelPlan.getTripType(),
-                destination.getStayingDays());
+        String rawPrompt = PromptLoader.get(PromptLoader.Prompts.BUDGETS);
+        return rawPrompt.replace("{{budgetLevel}}", userProfile.getBudgetLevel().name())
+                .replace("{{travelStyle}}", userProfile.getTravelStyle())
+                .replace("{{originCountry}}", ISO_COUNTRIES.get(travelPlan.getOriginCountry()))
+                .replace("{{destination}}", formatDestination(destination))
+                .replace("{{tripType}}", travelPlan.getTripType().name())
+                .replace("{{durationInDays}}", destination.getStayingDays().toString());
     }
 
     private String formatDestination(TravelPlanDestinationDTO destination) {
         return "%s (%s)".formatted(ISO_COUNTRIES.get(destination.getCountry()), destination.getCity());
+    }
+
+    public BudgetEstimationDTO findById(Long id) {
+        return budgetEstimationRepository.findById(id).map(MAPPER::toDTO)
+                .orElseThrow(() -> new NotFoundResourceException("Budget estimation not found: " + id));
     }
 }

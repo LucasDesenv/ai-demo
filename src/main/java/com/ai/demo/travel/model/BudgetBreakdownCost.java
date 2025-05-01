@@ -1,17 +1,16 @@
 package com.ai.demo.travel.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -22,25 +21,27 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "budget_estimations")
+@Table(name = "budget_breakdown_costs")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class BudgetEstimation {
+public class BudgetBreakdownCost {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long travelPlanId;
+    private BigDecimal estimation;
 
-    private BigDecimal totalEstimation;
+    private String description;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "budgetEstimation", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BudgetEstimationBreakdown> breakdowns = new ArrayList<>();
+    private String notes;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "budget_estimation_breakdown_id")
+    private BudgetEstimationBreakdown budgetEstimationBreakdown;
 
     @CreatedDate
     @EqualsAndHashCode.Exclude
@@ -49,19 +50,4 @@ public class BudgetEstimation {
     @LastModifiedDate
     @EqualsAndHashCode.Exclude
     private LocalDateTime lastModifiedAt;
-
-    public void prepareForCreation() {
-        this.breakdowns.forEach(bd -> bd.mapBudgetEstimation(this));
-        this.calculateTotalEstimation();
-    }
-
-    public void addNewCosts(List<BudgetEstimationBreakdown> newBreakDowns) {
-        this.breakdowns.addAll(newBreakDowns);
-        calculateTotalEstimation();
-    }
-
-    private void calculateTotalEstimation() {
-        this.totalEstimation = this.breakdowns.stream().map(BudgetEstimationBreakdown::getEstimation)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

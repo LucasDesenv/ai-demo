@@ -1,5 +1,7 @@
 package com.ai.demo.travel.model;
 
+import com.ai.demo.travel.dto.AIBudgetResponse;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
@@ -8,9 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -39,6 +44,10 @@ public class BudgetEstimationBreakdown {
 
     private String notes;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "budgetEstimationBreakdown", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BudgetBreakdownCost> costs = new ArrayList<>();
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "budget_estimation_id")
     private BudgetEstimation budgetEstimation;
@@ -55,7 +64,14 @@ public class BudgetEstimationBreakdown {
         this.budgetEstimation = budgetEstimation;
     }
 
-    public void updateNotes(String notes) {
-        this.notes = notes;
+    public void replaceCosts(AIBudgetResponse aiBudgetResponse) {
+        this.estimation = aiBudgetResponse.getTotalEstimated();
+        this.costs.clear();
+        aiBudgetResponse.getCosts().forEach(cost -> this.costs.add(BudgetBreakdownCost.builder()
+                .estimation(cost.getCost())
+                .notes(cost.getNotes())
+                .description(cost.getDescription())
+                .budgetEstimationBreakdown(this)
+                .build()));
     }
 }
