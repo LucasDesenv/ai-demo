@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ai.demo.BaseControllerIT;
-import com.ai.demo.travel.dto.DestinationDTO;
 import com.ai.demo.travel.dto.TravelPlanDTO;
+import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
 import com.ai.demo.travel.model.TripType;
@@ -20,6 +20,7 @@ import com.ai.demo.travel.model.repository.TravelPlanRepository;
 import com.ai.demo.travel.model.repository.UserProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.hamcrest.Matchers;
@@ -69,7 +70,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
     void testCreateAndGetTravelPlan() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
-                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Rome").country("IT").build()))
+                .destinations(Collections.singletonList(
+                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Rome").country("IT").build()))
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 7, 10))
                 .tripType(TripType.VACATION)
@@ -97,7 +99,11 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .andExpect(jsonPath("$").value(Matchers.hasSize(1)))
                 .andExpect(jsonPath("$[0].destinations[0].staying_days").value(15L))
                 .andExpect(jsonPath("$[0].destinations[0].country").value("IT"))
-                .andExpect(jsonPath("$[0].destinations").value(Matchers.hasSize(1)));
+                .andExpect(jsonPath("$[0].destinations[0].created_at").exists())
+                .andExpect(jsonPath("$[0].destinations[0].last_modified_at").exists())
+                .andExpect(jsonPath("$[0].destinations").value(Matchers.hasSize(1)))
+                .andExpect(jsonPath("$[0].created_at").exists())
+                .andExpect(jsonPath("$[0].last_modified_at").exists());
     }
 
     @Test
@@ -124,10 +130,35 @@ class TravelPlanControllerIT extends BaseControllerIT {
     }
 
     @Test
+    void testCreateTravelPlan_maxDestinations_shouldReturnBadRequest() throws Exception {
+        TravelPlanDTO dto = TravelPlanDTO.builder().userProfileId(userId)
+                .destinations(new ArrayList<>())
+                .startDate(LocalDate.of(2025, 7, 1))
+                .endDate(LocalDate.of(2025, 7, 10))
+                .tripType(TripType.VACATION).originCountry("BR").notes("Summer escape").build();
+
+        for (int i = 0; i < 6; i++) {
+            dto.getDestinations().add(
+                    TravelPlanDestinationDTO.builder().stayingDays(15L).city("Rome_" + i).country("IT")
+                            .build());
+        }
+
+        String body = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post(ENDPOINT.replace("{userId}", String.valueOf(userId)))
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("destinations: size must be between 1 and 5")));
+    }
+
+    @Test
     void testCreateTravelPlan_endDateBeforeStartDate_shouldReturnBadRequest() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
-                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
+                .destinations(Collections.singletonList(
+                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
                 .startDate(LocalDate.of(2025, 7, 10))
                 .endDate(LocalDate.of(2025, 7, 1)) // End before start
                 .tripType(TripType.VACATION)
@@ -151,7 +182,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(invalidUserId)
-                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
+                .destinations(Collections.singletonList(
+                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
                 .startDate(LocalDate.of(2025, 5, 1))
                 .endDate(LocalDate.of(2025, 5, 15))
                 .tripType(TripType.VACATION)

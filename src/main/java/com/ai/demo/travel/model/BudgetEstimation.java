@@ -1,17 +1,14 @@
 package com.ai.demo.travel.model;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,39 +19,26 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-@Table(name = "travel_plans")
+@Table(name = "budget_estimations")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class TravelPlan {
+public class BudgetEstimation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userProfileId;
+    private Long travelPlanId;
 
-    private String originCountry;
+    private BigDecimal totalEstimation;
 
-    @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<TravelPlanDestination> destinations;
-
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate startDate;
-
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate endDate;
-
-    @Enumerated(EnumType.STRING)
-    private TripType tripType;
-
-    @Column(length = 1000)
-    private String notes;
+    @OneToMany(mappedBy = "budgetEstimation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BudgetEstimationBreakdown> breakdowns;
 
     @CreatedDate
     @EqualsAndHashCode.Exclude
@@ -65,6 +49,10 @@ public class TravelPlan {
     private LocalDateTime lastModifiedAt;
 
     public void prepareForCreation() {
-        this.destinations.forEach(destination -> destination.mapTravelPlanRelationship(this));
+        this.breakdowns.forEach(bd -> bd.mapBudgetEstimation(this));
+    }
+
+    public void updateBreakDowns(List<BudgetEstimationBreakdown> newBreakDowns) {
+        this.breakdowns = newBreakDowns;
     }
 }

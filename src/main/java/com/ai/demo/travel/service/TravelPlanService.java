@@ -22,6 +22,7 @@ public class TravelPlanService {
         dto.setUserProfileId(userId);
         validateTravelPlanForCreation(dto);
         TravelPlan entity = mapper.toEntity(dto);
+        entity.prepareForCreation();
         return mapper.toDTO(repository.save(entity));
     }
 

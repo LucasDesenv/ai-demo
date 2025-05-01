@@ -3,11 +3,11 @@ package com.ai.demo.travel.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-import com.ai.demo.travel.dto.DestinationDTO;
 import com.ai.demo.travel.dto.TravelPlanDTO;
+import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
 import com.ai.demo.travel.mapper.TravelPlanMapper;
-import com.ai.demo.travel.model.Destination;
 import com.ai.demo.travel.model.TravelPlan;
+import com.ai.demo.travel.model.TravelPlanDestination;
 import com.ai.demo.travel.model.TripType;
 import com.ai.demo.travel.model.repository.TravelPlanRepository;
 import java.time.LocalDate;
@@ -40,7 +40,8 @@ class TravelPlanServiceTest {
     void testSave_shouldStoreTravelPlan() {
         Long userId = 1L;
         TravelPlanDTO dto = TravelPlanDTO.builder()
-                .destinations(Collections.singletonList(DestinationDTO.builder().stayingDays(15L).city("Lisbon").country("PT").build()))
+                .destinations(Collections.singletonList(
+                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Lisbon").country("PT").build()))
                 .startDate(LocalDate.of(2025, 6, 1))
                 .endDate(LocalDate.of(2025, 6, 10))
                 .tripType(TripType.VACATION)
@@ -64,7 +65,7 @@ class TravelPlanServiceTest {
         Long userId = 2L;
         TravelPlan plan = TravelPlan.builder()
                 .userProfileId(userId)
-                .destinations(Collections.singletonList(Destination.builder().stayingDays(15L).city("Madrid").country("ES").build()))
+                .destinations(Collections.singletonList(TravelPlanDestination.builder().stayingDays(15L).city("Madrid").country("ES").build()))
                 .startDate(LocalDate.of(2025, 4, 1))
                 .endDate(LocalDate.of(2025, 4, 8))
                 .tripType(TripType.WORK)

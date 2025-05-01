@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +34,8 @@ public class TravelPlanDTO {
 
     @NotEmpty
     @Valid
-    private List<DestinationDTO> destinations;
+    @Size(min = 1, max = 5)
+    private List<TravelPlanDestinationDTO> destinations;
 
     @JsonProperty("start_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -49,4 +51,9 @@ public class TravelPlanDTO {
 
     @Size(max = 1000)
     private String notes;
+
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
+    @JsonProperty("last_modified_at")
+    private LocalDateTime lastModifiedAt;
 }
