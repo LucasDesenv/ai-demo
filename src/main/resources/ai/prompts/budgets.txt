@@ -4,6 +4,7 @@
         The traveler profile:
         - Travel style: {{travelStyle}}
         - Budget level: {{budgetLevel}}
+        - Travelers: {{travelers}}
 
         The trip details:
         - Country of origin: {{originCountry}}

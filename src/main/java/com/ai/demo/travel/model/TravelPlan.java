@@ -1,14 +1,18 @@
 package com.ai.demo.travel.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
@@ -52,6 +56,12 @@ public class TravelPlan {
 
     @Enumerated(EnumType.STRING)
     private TripType tripType;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "travel_plan_traveler_types", joinColumns = @JoinColumn(name = "travel_plan_id"))
+    @Column(name = "traveler_type")
+    @Enumerated(EnumType.STRING)
+    private List<TravelerType> travelerTypes;
 
     @Column(length = 1000)
     private String notes;

@@ -16,6 +16,7 @@ import com.ai.demo.travel.dto.UserProfileDTO;
 import com.ai.demo.travel.mapper.BudgetEstimationMapper;
 import com.ai.demo.travel.model.BudgetEstimation;
 import com.ai.demo.travel.model.BudgetEstimationBreakdown;
+import com.ai.demo.travel.model.TravelerType;
 import com.ai.demo.travel.model.repository.BudgetEstimationRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -181,12 +182,17 @@ public class BudgetEstimationService {
         String rawPrompt = PromptLoader.get(PromptLoader.Prompts.BUDGETS);
         String durationInDays = String.valueOf(
                 Period.between(destination.getStartDate(), destination.getEndDate()).getDays());
+        Map<TravelerType, Long> collect = travelPlan.getTravelerTypes().stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        String travelers = collect.entrySet().stream().map(entry -> entry.getValue() + "x" + entry.getKey().name())
+                .collect(Collectors.joining());
         return rawPrompt.replace("{{budgetLevel}}", userProfile.getBudgetLevel().name())
                 .replace("{{travelStyle}}", userProfile.getTravelStyle())
                 .replace("{{originCountry}}", ISO_COUNTRIES.get(travelPlan.getOriginCountry()))
                 .replace("{{destination}}", formatDestination(destination))
                 .replace("{{tripType}}", travelPlan.getTripType().name())
-                .replace("{{durationInDays}}", durationInDays);
+                .replace("{{durationInDays}}", durationInDays)
+                .replace("{{travelers}}", travelers);
     }
 
     private String formatDestination(TravelPlanDestinationDTO destination) {

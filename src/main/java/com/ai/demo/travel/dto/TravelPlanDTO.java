@@ -1,5 +1,6 @@
 package com.ai.demo.travel.dto;
 
+import com.ai.demo.travel.model.TravelerType;
 import com.ai.demo.travel.model.TripType;
 import com.ai.demo.travel.validator.ValidCountryCode;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -36,6 +37,10 @@ public class TravelPlanDTO {
     @Valid
     @Size(min = 1, max = 5)
     private List<TravelPlanDestinationDTO> destinations;
+
+    @NotEmpty
+    @Size(min = 1, max = 20)
+    private List<TravelerType> travelerTypes;
 
     @JsonProperty("start_date")
     @JsonFormat(pattern = "yyyy-MM-dd")

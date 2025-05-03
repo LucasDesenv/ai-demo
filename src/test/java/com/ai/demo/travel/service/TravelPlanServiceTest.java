@@ -13,13 +13,14 @@ import com.ai.demo.travel.model.repository.TravelPlanRepository;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TravelPlanServiceTest {
 
     @Mock
@@ -29,12 +30,6 @@ class TravelPlanServiceTest {
 
     @InjectMocks
     private TravelPlanService service;
-
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-        service = new TravelPlanService(repository);
-    }
 
     @Test
     void testSave_shouldStoreTravelPlan() {

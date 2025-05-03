@@ -1,5 +1,6 @@
 package com.ai.demo.travel.service;
 
+import static com.ai.demo.travel.helper.UserProfileHelper.defaultUserProfile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,11 +21,10 @@ import com.ai.demo.travel.dto.BudgetEstimationBreakdownDTO;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
 import com.ai.demo.travel.dto.UserProfileDTO;
+import com.ai.demo.travel.helper.TravelPlanHelper;
 import com.ai.demo.travel.model.BudgetBreakdownCost;
 import com.ai.demo.travel.model.BudgetEstimation;
 import com.ai.demo.travel.model.BudgetEstimationBreakdown;
-import com.ai.demo.travel.model.BudgetLevel;
-import com.ai.demo.travel.model.TripType;
 import com.ai.demo.travel.model.repository.BudgetEstimationRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -79,24 +79,9 @@ class BudgetEstimationServiceTest {
         Long userId = 1L;
         Long travelPlanId = 2L;
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .id(travelPlanId)
-                .startDate(LocalDate.now())
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris")
-                        .startDate(LocalDate.now())
-                        .endDate(LocalDate.now().plusDays(15))
-                        .lastModifiedAt(LocalDateTime.now()).build()))
-                .build();
+        var travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
 
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
-                .build();
+        UserProfileDTO userProfile = defaultUserProfile(userId);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
         when(userProfileService.findById(userId)).thenReturn(userProfile);
@@ -125,13 +110,8 @@ class BudgetEstimationServiceTest {
         Long userId = 1L;
         Long travelPlanId = 2L;
 
-        TravelPlanDTO incompleteTravelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .startDate(null)
-                .endDate(LocalDate.now())
-                .tripType(TripType.VACATION)
-                .userProfileId(userId)
-                .build();
+        var incompleteTravelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
+        incompleteTravelPlan.setStartDate(null);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(incompleteTravelPlan);
 
@@ -148,13 +128,8 @@ class BudgetEstimationServiceTest {
         Long userId = 1L;
         Long travelPlanId = 2L;
 
-        TravelPlanDTO incompleteTravelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .startDate(LocalDate.now())
-                .endDate(null)
-                .userProfileId(userId)
-                .tripType(TripType.VACATION)
-                .build();
+        var incompleteTravelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
+        incompleteTravelPlan.setEndDate(null);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(incompleteTravelPlan);
 
@@ -172,22 +147,7 @@ class BudgetEstimationServiceTest {
         Long travelPlanId = 2L;
         LocalDateTime now = LocalDateTime.now();
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .userProfileId(userId)
-                .tripType(TripType.VACATION)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(10))
-                .lastModifiedAt(now)
-                .destinations(List.of(
-                        TravelPlanDestinationDTO.builder()
-                                .id(10L)
-                                .country("FR")
-                                .city("Paris")
-                                .startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15))
-                                .lastModifiedAt(now)
-                                .build()))
-                .build();
+        var travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
 
         BudgetEstimation existingBudget = BudgetEstimation.builder()
                 .id(100L)
@@ -198,7 +158,7 @@ class BudgetEstimationServiceTest {
                         BudgetEstimationBreakdown.builder()
                                 .travelPlanDestinationId(10L)
                                 .createdAt(now)
-                                .lastModifiedAt(now)
+                                .lastModifiedAt(now.plusHours(1))
                                 .build())))
                 .build();
 
@@ -220,32 +180,16 @@ class BudgetEstimationServiceTest {
         Long travelPlanId = 2L;
         LocalDateTime now = LocalDateTime.now();
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .userProfileId(userId)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(10))
+        var travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
+        travelPlan.getDestinations().get(0).setLastModifiedAt(now.minusHours(1));
+        travelPlan.getDestinations().add(TravelPlanDestinationDTO.builder()
+                .id(938723L)
+                .country("CA")
+                .city("NEW ONE")
+                .startDate(LocalDate.now().plusDays(5))
+                .endDate(LocalDate.now().plusDays(12))
                 .lastModifiedAt(now)
-                .tripType(TripType.VACATION)
-                .originCountry("US")
-                .destinations(List.of(
-                        TravelPlanDestinationDTO.builder()
-                                .id(10L)
-                                .country("FR")
-                                .city("Paris")
-                                .startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(5))
-                                .lastModifiedAt(now)
-                                .build(),
-                        TravelPlanDestinationDTO.builder()
-                                .id(938723L)
-                                .country("CA")
-                                .city("NEW ONE")
-                                .startDate(LocalDate.now().plusDays(5))
-                                .endDate(LocalDate.now().plusDays(12))
-                                .lastModifiedAt(now)
-                                .build()))
-                .build();
+                .build());
 
         BudgetEstimation existingBudget = BudgetEstimation.builder()
                 .id(100L)
@@ -265,11 +209,7 @@ class BudgetEstimationServiceTest {
                                 .build())))
                 .build();
 
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
-                .build();
+        UserProfileDTO userProfile = defaultUserProfile(userId);
 
         when(userProfileService.findById(userId)).thenReturn(userProfile);
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
@@ -303,24 +243,9 @@ class BudgetEstimationServiceTest {
         Long travelPlanId = 2L;
         LocalDateTime now = LocalDateTime.now();
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .userProfileId(userId)
-                .tripType(TripType.VACATION)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(10))
-                .lastModifiedAt(now.plusHours(2))
-                .originCountry("BR")
-                .destinations(List.of(
-                        TravelPlanDestinationDTO.builder()
-                                .id(10L)
-                                .country("FR")
-                                .city("Paris")
-                                .startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(5))
-                                .lastModifiedAt(now.plusHours(1)) // more recent than previous budget
-                                .build()))
-                .build();
+        TravelPlanDTO travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 10L);
+        travelPlan.getDestinations().get(0).setLastModifiedAt(now.plusHours(1));
+        travelPlan.setLastModifiedAt(now.plusHours(2));
 
         BudgetEstimation oldBudget = BudgetEstimation.builder()
                 .id(100L)
@@ -334,11 +259,7 @@ class BudgetEstimationServiceTest {
                                 .build())))
                 .build();
 
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
-                .build();
+        UserProfileDTO userProfile = defaultUserProfile(userId);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
         when(userProfileService.findById(userId)).thenReturn(userProfile);
@@ -360,23 +281,9 @@ class BudgetEstimationServiceTest {
         Long travelPlanId = 2L;
         LocalDateTime now = LocalDateTime.now();
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .id(travelPlanId)
-                .tripType(TripType.VACATION)
-                .userProfileId(userId)
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusDays(10))
-                .lastModifiedAt(now)
-                .originCountry("BR")
-                .destinations(List.of(
-                        TravelPlanDestinationDTO.builder()
-                                .id(10L)
-                                .country("FR")
-                                .city("Paris")
-                                .startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(5))
-                                .lastModifiedAt(now.plusHours(1)) // more recent than previous budget
-                                .build()))
-                .build();
+        TravelPlanDTO travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 1L);
+        travelPlan.getDestinations().get(0).setLastModifiedAt(now.plusHours(1));
+        travelPlan.setLastModifiedAt(now);
 
         BudgetEstimation oldBudget = BudgetEstimation.builder()
                 .id(100L)
@@ -406,23 +313,9 @@ class BudgetEstimationServiceTest {
         Long userId = 1L;
         Long travelPlanId = 2L;
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .id(travelPlanId)
-                .startDate(LocalDate.now())
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").startDate(LocalDate.now())
-                        .endDate(LocalDate.now().plusDays(15))
-                        .lastModifiedAt(LocalDateTime.now()).build()))
-                .build();
+        TravelPlanDTO travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 1L);
 
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
-                .build();
+        UserProfileDTO userProfile = defaultUserProfile(userId);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
         when(userProfileService.findById(userId)).thenReturn(userProfile);
@@ -440,23 +333,9 @@ class BudgetEstimationServiceTest {
         Long userId = 1L;
         Long travelPlanId = 2L;
 
-        TravelPlanDTO travelPlan = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .id(travelPlanId)
-                .startDate(LocalDate.now())
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").startDate(LocalDate.now())
-                        .endDate(LocalDate.now().plusDays(5))
-                        .lastModifiedAt(LocalDateTime.now()).build()))
-                .build();
+        TravelPlanDTO travelPlan = TravelPlanHelper.dtoWithSingleDestination(userId, travelPlanId, 1L);
 
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
-                .build();
+        UserProfileDTO userProfile = defaultUserProfile(userId);
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
         when(userProfileService.findById(userId)).thenReturn(userProfile);

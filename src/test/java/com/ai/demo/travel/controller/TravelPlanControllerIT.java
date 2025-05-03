@@ -14,6 +14,7 @@ import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
+import com.ai.demo.travel.model.TravelerType;
 import com.ai.demo.travel.model.TripType;
 import com.ai.demo.travel.model.UserProfile;
 import com.ai.demo.travel.model.repository.TravelPlanRepository;
@@ -70,6 +71,7 @@ class TravelPlanControllerIT extends BaseControllerIT {
     void testCreateAndGetTravelPlan() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
+                .travelerTypes(List.of(TravelerType.ADULT))
                 .destinations(Collections.singletonList(
                         TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(15)).city("Rome").country("IT").build()))
@@ -161,6 +163,7 @@ class TravelPlanControllerIT extends BaseControllerIT {
     void testCreateTravelPlan_endDateBeforeStartDate_shouldReturnBadRequest() throws Exception {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
+                .travelerTypes(List.of(TravelerType.ADULT))
                 .destinations(Collections.singletonList(
                         TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
                                 .endDate(LocalDate.now().plusDays(15)).city("Paris").country("FR").build()))
@@ -179,6 +182,31 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(containsString("Start date cannot be after end date")));
+    }
+
+    @Test
+    void testCreateTravelPlan_emptyTravelerType_shouldReturnBadRequest() throws Exception {
+        TravelPlanDTO dto = TravelPlanDTO.builder()
+                .userProfileId(userId)
+                .travelerTypes(List.of())
+                .destinations(Collections.singletonList(
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plusDays(15)).city("Paris").country("FR").build()))
+                .startDate(LocalDate.of(2025, 7, 10))
+                .endDate(LocalDate.of(2026, 7, 1))
+                .tripType(TripType.VACATION)
+                .originCountry("BR")
+                .notes("Backwards trip")
+                .build();
+
+        String body = objectMapper.writeValueAsString(dto);
+
+        mockMvc.perform(post(ENDPOINT.replace("{userId}", String.valueOf(userId)))
+                .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("travelerTypes: must not be empty")));
     }
 
     @Test

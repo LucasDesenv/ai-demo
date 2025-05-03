@@ -4,5 +4,7 @@ public enum TripType {
     VACATION,
     WORK,
     REMOTE_WORK,
+    PARTY,
+    BAG_PACKER,
     OTHER
 }
