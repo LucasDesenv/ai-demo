@@ -64,6 +64,8 @@ CREATE TABLE travel_plan_destinations
     country          VARCHAR(255) NOT NULL,
     city             VARCHAR(255),
     staying_days     BIGINT,
+    start_date       DATE,
+    end_date         DATE,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (travel_plan_id) REFERENCES travel_plans (id) ON DELETE CASCADE

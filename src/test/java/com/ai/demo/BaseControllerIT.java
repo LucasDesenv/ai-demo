@@ -1,5 +1,6 @@
 package com.ai.demo;
 
+import com.ai.demo.finance.ai.ChatGptService;
 import io.zonky.test.db.postgres.junit5.EmbeddedPostgresExtension;
 import io.zonky.test.db.postgres.junit5.PreparedDbExtension;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,6 +29,8 @@ public class BaseControllerIT {
 
     @RegisterExtension
     public static PreparedDbExtension epg = EmbeddedPostgresExtension.preparedDatabase(BaseControllerIT::initDatabase);
+    @MockBean
+    protected ChatGptService chatGptService;
     private static RedisServer redisServer;
 
     @BeforeAll

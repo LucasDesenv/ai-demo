@@ -2,6 +2,7 @@ package com.ai.demo.travel.model;
 
 import com.ai.demo.travel.dto.AIBudgetResponse;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
@@ -38,7 +39,12 @@ public class BudgetEstimationBreakdown {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "travel_plan_destination_id", nullable = false, insertable = true, updatable = false)
     private Long travelPlanDestinationId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "travel_plan_destination_id", insertable = false, updatable = false)
+    private TravelPlanDestination travelPlanDestination;
 
     private BigDecimal estimation;
 

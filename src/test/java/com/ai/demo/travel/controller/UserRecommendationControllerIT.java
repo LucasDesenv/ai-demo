@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ai.demo.BaseControllerIT;
-import com.ai.demo.finance.ai.ChatGptService;
 import com.ai.demo.travel.dto.UserProfileDTO;
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
@@ -18,7 +17,6 @@ import com.ai.demo.travel.model.UserRecommendation;
 import com.ai.demo.travel.model.repository.UserProfileRepository;
 import com.ai.demo.travel.model.repository.UserRecommendationRepository;
 import com.ai.demo.travel.service.UserProfileService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -37,9 +34,6 @@ class UserRecommendationControllerIT extends BaseControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -52,9 +46,6 @@ class UserRecommendationControllerIT extends BaseControllerIT {
 
     @Autowired
     private UserRecommendationRepository recommendationRepository;
-
-    @MockBean
-    private ChatGptService chatGptService;
 
     @BeforeEach
     void setup() {

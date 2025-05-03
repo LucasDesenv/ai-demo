@@ -86,7 +86,9 @@ class BudgetEstimationServiceTest {
                 .tripType(TripType.VACATION)
                 .originCountry("BR")
                 .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").stayingDays(5L)
+                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris")
+                        .startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(15))
                         .lastModifiedAt(LocalDateTime.now()).build()))
                 .build();
 
@@ -182,7 +184,7 @@ class BudgetEstimationServiceTest {
                                 .id(10L)
                                 .country("FR")
                                 .city("Paris")
-                                .stayingDays(5L)
+                                .startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15))
                                 .lastModifiedAt(now)
                                 .build()))
                 .build();
@@ -231,14 +233,16 @@ class BudgetEstimationServiceTest {
                                 .id(10L)
                                 .country("FR")
                                 .city("Paris")
-                                .stayingDays(5L)
+                                .startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plusDays(5))
                                 .lastModifiedAt(now)
                                 .build(),
                         TravelPlanDestinationDTO.builder()
                                 .id(938723L)
                                 .country("CA")
                                 .city("NEW ONE")
-                                .stayingDays(7L)
+                                .startDate(LocalDate.now().plusDays(5))
+                                .endDate(LocalDate.now().plusDays(12))
                                 .lastModifiedAt(now)
                                 .build()))
                 .build();
@@ -312,7 +316,8 @@ class BudgetEstimationServiceTest {
                                 .id(10L)
                                 .country("FR")
                                 .city("Paris")
-                                .stayingDays(5L)
+                                .startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plusDays(5))
                                 .lastModifiedAt(now.plusHours(1)) // more recent than previous budget
                                 .build()))
                 .build();
@@ -368,7 +373,7 @@ class BudgetEstimationServiceTest {
                                 .id(10L)
                                 .country("FR")
                                 .city("Paris")
-                                .stayingDays(5L)
+                                .startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(5))
                                 .lastModifiedAt(now.plusHours(1)) // more recent than previous budget
                                 .build()))
                 .build();
@@ -383,12 +388,6 @@ class BudgetEstimationServiceTest {
                                 .createdAt(now)
                                 .lastModifiedAt(now)
                                 .build())))
-                .build();
-
-        UserProfileDTO userProfile = UserProfileDTO.builder()
-                .id(userId)
-                .budgetLevel(BudgetLevel.MEDIUM)
-                .travelStyle("Backpacker")
                 .build();
 
         when(travelPlanService.findById(travelPlanId)).thenReturn(travelPlan);
@@ -414,7 +413,8 @@ class BudgetEstimationServiceTest {
                 .tripType(TripType.VACATION)
                 .originCountry("BR")
                 .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").stayingDays(5L)
+                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(15))
                         .lastModifiedAt(LocalDateTime.now()).build()))
                 .build();
 
@@ -447,7 +447,8 @@ class BudgetEstimationServiceTest {
                 .tripType(TripType.VACATION)
                 .originCountry("BR")
                 .endDate(LocalDate.now().plusDays(10))
-                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").stayingDays(5L)
+                .destinations(List.of(TravelPlanDestinationDTO.builder().id(10L).country("FR").city("Paris").startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(5))
                         .lastModifiedAt(LocalDateTime.now()).build()))
                 .build();
 

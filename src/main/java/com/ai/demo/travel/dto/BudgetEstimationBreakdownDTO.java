@@ -18,6 +18,8 @@ public class BudgetEstimationBreakdownDTO {
 
     private BigDecimal estimation;
 
+    private TravelPlanDestinationDTO travelPlanDestination;
+
     private List<BudgetBreakdownCostDTO> costs;
 
     @JsonProperty("created_at")

@@ -41,7 +41,8 @@ class TravelPlanServiceTest {
         Long userId = 1L;
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Lisbon").country("PT").build()))
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Lisbon")
+                                .country("PT").build()))
                 .startDate(LocalDate.of(2025, 6, 1))
                 .endDate(LocalDate.of(2025, 6, 10))
                 .tripType(TripType.VACATION)
@@ -65,7 +66,8 @@ class TravelPlanServiceTest {
         Long userId = 2L;
         TravelPlan plan = TravelPlan.builder()
                 .userProfileId(userId)
-                .destinations(Collections.singletonList(TravelPlanDestination.builder().stayingDays(15L).city("Madrid").country("ES").build()))
+                .destinations(Collections.singletonList(TravelPlanDestination.builder().startDate(LocalDate.now())
+                        .endDate(LocalDate.now().plusDays(15)).city("Madrid").country("ES").build()))
                 .startDate(LocalDate.of(2025, 4, 1))
                 .endDate(LocalDate.of(2025, 4, 8))
                 .tripType(TripType.WORK)

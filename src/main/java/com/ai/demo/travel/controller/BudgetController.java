@@ -17,19 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Budget", description = "APIs related to Budget")
 public class BudgetController {
-    public static final String CREATE_ENDPOINT = "/travel-plans/{travelPlanId}/budget";
-    public static final String READ_ENDPOINT = "/budgets/{id}";
+    public static final String ENDPOINT = "/travel-plans/{travelPlanId}/budget";
 
     private final BudgetEstimationService budgetEstimationService;
 
-    @PostMapping(CREATE_ENDPOINT)
+    @PostMapping(value = ENDPOINT)
     public ResponseEntity<BudgetEstimationDTO> estimateBudget(@PathVariable Long travelPlanId) {
         BudgetEstimationDTO created = budgetEstimationService.estimateBudget(travelPlanId);
-        return ResponseEntity.created(URI.create(READ_ENDPOINT.replace("{id}", String.valueOf(created.getId())))).body(created);
+        return ResponseEntity.created(URI.create(ENDPOINT.replace("{travelPlanId}", String.valueOf(created.getId())))).body(created);
     }
 
-    @GetMapping(READ_ENDPOINT)
-    public ResponseEntity<BudgetEstimationDTO> getBudget(@PathVariable Long id) {
-        return ResponseEntity.ok(budgetEstimationService.findById(id));
+    @GetMapping(value = ENDPOINT)
+    public ResponseEntity<BudgetEstimationDTO> getBudget(@PathVariable Long travelPlanId) {
+        return ResponseEntity.ok(budgetEstimationService.findByTravelPlanId(travelPlanId));
     }
 }

@@ -71,7 +71,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
                 .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Rome").country("IT").build()))
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plusDays(15)).city("Rome").country("IT").build()))
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 7, 10))
                 .tripType(TripType.VACATION)
@@ -85,10 +86,11 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.user_profile_id").value(userId))
                 .andExpect(jsonPath("$.destinations").value(Matchers.hasSize(1)))
-                .andExpect(jsonPath("$.destinations[0].staying_days").value(15L))
+                .andExpect(jsonPath("$.destinations[0].start_date").isNotEmpty())
+                .andExpect(jsonPath("$.destinations[0].end_date").isNotEmpty())
                 .andExpect(jsonPath("$.destinations[0].city").value("Rome"))
                 .andExpect(jsonPath("$.destinations[0].country").value("IT"));
 
@@ -97,7 +99,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(Matchers.hasSize(1)))
-                .andExpect(jsonPath("$[0].destinations[0].staying_days").value(15L))
+                .andExpect(jsonPath("$[0].destinations[0].start_date").isNotEmpty())
+                .andExpect(jsonPath("$[0].destinations[0].end_date").isNotEmpty())
                 .andExpect(jsonPath("$[0].destinations[0].country").value("IT"))
                 .andExpect(jsonPath("$[0].destinations[0].created_at").exists())
                 .andExpect(jsonPath("$[0].destinations[0].last_modified_at").exists())
@@ -139,7 +142,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
         for (int i = 0; i < 6; i++) {
             dto.getDestinations().add(
-                    TravelPlanDestinationDTO.builder().stayingDays(15L).city("Rome_" + i).country("IT")
+                    TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Rome_" + i)
+                            .country("IT")
                             .build());
         }
 
@@ -158,7 +162,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(userId)
                 .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
+                                .endDate(LocalDate.now().plusDays(15)).city("Paris").country("FR").build()))
                 .startDate(LocalDate.of(2025, 7, 10))
                 .endDate(LocalDate.of(2025, 7, 1)) // End before start
                 .tripType(TripType.VACATION)
@@ -183,7 +188,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .userProfileId(invalidUserId)
                 .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().stayingDays(15L).city("Paris").country("FR").build()))
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Paris")
+                                .country("FR").build()))
                 .startDate(LocalDate.of(2025, 5, 1))
                 .endDate(LocalDate.of(2025, 5, 15))
                 .tripType(TripType.VACATION)

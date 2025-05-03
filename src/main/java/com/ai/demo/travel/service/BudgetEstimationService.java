@@ -19,6 +19,7 @@ import com.ai.demo.travel.model.BudgetEstimationBreakdown;
 import com.ai.demo.travel.model.repository.BudgetEstimationRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -178,20 +179,22 @@ public class BudgetEstimationService {
 
     private String buildBudgetPrompt(UserProfileDTO userProfile, TravelPlanDTO travelPlan, TravelPlanDestinationDTO destination) {
         String rawPrompt = PromptLoader.get(PromptLoader.Prompts.BUDGETS);
+        String durationInDays = String.valueOf(
+                Period.between(destination.getStartDate(), destination.getEndDate()).getDays());
         return rawPrompt.replace("{{budgetLevel}}", userProfile.getBudgetLevel().name())
                 .replace("{{travelStyle}}", userProfile.getTravelStyle())
                 .replace("{{originCountry}}", ISO_COUNTRIES.get(travelPlan.getOriginCountry()))
                 .replace("{{destination}}", formatDestination(destination))
                 .replace("{{tripType}}", travelPlan.getTripType().name())
-                .replace("{{durationInDays}}", destination.getStayingDays().toString());
+                .replace("{{durationInDays}}", durationInDays);
     }
 
     private String formatDestination(TravelPlanDestinationDTO destination) {
         return "%s (%s)".formatted(ISO_COUNTRIES.get(destination.getCountry()), destination.getCity());
     }
 
-    public BudgetEstimationDTO findById(Long id) {
-        return budgetEstimationRepository.findById(id).map(MAPPER::toDTO)
-                .orElseThrow(() -> new NotFoundResourceException("Budget estimation not found: " + id));
+    public BudgetEstimationDTO findByTravelPlanId(Long travelPlanId) {
+        return budgetEstimationRepository.findByTravelPlanId(travelPlanId).map(MAPPER::toDTO)
+                .orElseThrow(() -> new NotFoundResourceException("Budget estimation not found travel: " + travelPlanId));
     }
 }

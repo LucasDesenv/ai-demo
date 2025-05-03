@@ -28,9 +28,9 @@ public final class PromptLoader {
             Path folderPath;
             if (uri.getScheme().equals("jar")) {
                 // For reading from JAR file in production
-              try (FileSystem fs = FileSystems.newFileSystem(uri, Map.of())) {
-                folderPath = fs.getPath(PROMPT_FOLDER);
-              }
+                try (FileSystem fs = FileSystems.newFileSystem(uri, Map.of())) {
+                    folderPath = fs.getPath(PROMPT_FOLDER);
+                }
             } else {
                 // Local development
                 folderPath = Paths.get(uri);

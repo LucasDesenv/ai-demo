@@ -1,9 +1,11 @@
 package com.ai.demo.travel.dto;
 
 import com.ai.demo.travel.validator.ValidCountryCode;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,9 +25,16 @@ public class TravelPlanDestinationDTO {
     private String country;
     @NotBlank
     private String city;
+
     @NotNull
-    @JsonProperty("staying_days")
-    private Long stayingDays;
+    @JsonProperty("start_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+
+    @NotNull
+    @JsonProperty("end_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
 
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
