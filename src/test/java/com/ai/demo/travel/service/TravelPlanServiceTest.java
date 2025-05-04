@@ -36,8 +36,8 @@ class TravelPlanServiceTest {
         Long userId = 1L;
         TravelPlanDTO dto = TravelPlanDTO.builder()
                 .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Lisbon")
-                                .country("PT").build()))
+                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).toCity("Lisbon")
+                                .toCountry("PT").build()))
                 .startDate(LocalDate.of(2025, 6, 1))
                 .endDate(LocalDate.of(2025, 6, 10))
                 .tripType(TripType.VACATION)
@@ -50,8 +50,8 @@ class TravelPlanServiceTest {
 
         TravelPlanDTO saved = service.save(userId, dto);
 
-        assertEquals("PT", saved.getDestinations().get(0).getCountry());
-        assertEquals("Lisbon", saved.getDestinations().get(0).getCity());
+        assertEquals("PT", saved.getDestinations().get(0).getToCountry());
+        assertEquals("Lisbon", saved.getDestinations().get(0).getToCity());
 
         verify(repository).save(any());
     }
@@ -62,7 +62,7 @@ class TravelPlanServiceTest {
         TravelPlan plan = TravelPlan.builder()
                 .userProfileId(userId)
                 .destinations(Collections.singletonList(TravelPlanDestination.builder().startDate(LocalDate.now())
-                        .endDate(LocalDate.now().plusDays(15)).city("Madrid").country("ES").build()))
+                        .endDate(LocalDate.now().plusDays(15)).toCity("Madrid").toCountry("ES").build()))
                 .startDate(LocalDate.of(2025, 4, 1))
                 .endDate(LocalDate.of(2025, 4, 8))
                 .tripType(TripType.WORK)
@@ -74,7 +74,7 @@ class TravelPlanServiceTest {
         List<TravelPlanDTO> results = service.findAllByUser(userId);
 
         assertEquals(1, results.size());
-        assertEquals("Madrid", results.get(0).getDestinations().get(0).getCity());
-        assertEquals("ES", results.get(0).getDestinations().get(0).getCountry());
+        assertEquals("Madrid", results.get(0).getDestinations().get(0).getToCity());
+        assertEquals("ES", results.get(0).getDestinations().get(0).getToCountry());
     }
 }

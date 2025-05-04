@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ai.demo.BaseControllerIT;
 import com.ai.demo.travel.dto.TravelPlanDTO;
 import com.ai.demo.travel.dto.TravelPlanDestinationDTO;
+import com.ai.demo.travel.helper.TravelPlanHelper;
 import com.ai.demo.travel.model.BudgetLevel;
 import com.ai.demo.travel.model.Gender;
-import com.ai.demo.travel.model.TravelerType;
 import com.ai.demo.travel.model.TripType;
 import com.ai.demo.travel.model.UserProfile;
 import com.ai.demo.travel.model.repository.TravelPlanRepository;
@@ -69,18 +69,7 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
     @Test
     void testCreateAndGetTravelPlan() throws Exception {
-        TravelPlanDTO dto = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .travelerTypes(List.of(TravelerType.ADULT))
-                .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(15)).city("Rome").country("IT").build()))
-                .startDate(LocalDate.of(2025, 7, 1))
-                .endDate(LocalDate.of(2025, 7, 10))
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .notes("Summer escape")
-                .build();
+        TravelPlanDTO dto = TravelPlanHelper.dtoWithSingleDestination(userId, null, null);
 
         String body = objectMapper.writeValueAsString(dto);
 
@@ -93,8 +82,10 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.destinations").value(Matchers.hasSize(1)))
                 .andExpect(jsonPath("$.destinations[0].start_date").isNotEmpty())
                 .andExpect(jsonPath("$.destinations[0].end_date").isNotEmpty())
-                .andExpect(jsonPath("$.destinations[0].city").value("Rome"))
-                .andExpect(jsonPath("$.destinations[0].country").value("IT"));
+                .andExpect(jsonPath("$.destinations[0].from_city").value("Frankfurt"))
+                .andExpect(jsonPath("$.destinations[0].from_country").value("DE"))
+                .andExpect(jsonPath("$.destinations[0].to_city").value("Berlin"))
+                .andExpect(jsonPath("$.destinations[0].to_country").value("DE"));
 
         mockMvc.perform(get(ENDPOINT.replace("{userId}", String.valueOf(userId)))
                 .header(TRAVEL_ACCEPT_VERSION, TRAVEL_API_V1)
@@ -103,7 +94,10 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .andExpect(jsonPath("$").value(Matchers.hasSize(1)))
                 .andExpect(jsonPath("$[0].destinations[0].start_date").isNotEmpty())
                 .andExpect(jsonPath("$[0].destinations[0].end_date").isNotEmpty())
-                .andExpect(jsonPath("$[0].destinations[0].country").value("IT"))
+                .andExpect(jsonPath("$[0].destinations[0].from_city").value("Frankfurt"))
+                .andExpect(jsonPath("$[0].destinations[0].from_country").value("DE"))
+                .andExpect(jsonPath("$[0].destinations[0].to_city").value("Berlin"))
+                .andExpect(jsonPath("$[0].destinations[0].to_country").value("DE"))
                 .andExpect(jsonPath("$[0].destinations[0].created_at").exists())
                 .andExpect(jsonPath("$[0].destinations[0].last_modified_at").exists())
                 .andExpect(jsonPath("$[0].destinations").value(Matchers.hasSize(1)))
@@ -129,8 +123,6 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(containsString("destinations: must not be empty")))
-                .andExpect(jsonPath("$.message").value(containsString("originCountry: must not be blank")))
-                .andExpect(jsonPath("$.message").value(containsString("originCountry: Invalid country code")))
                 .andExpect(jsonPath("$.message").value(containsString("tripType: must not be null")));
     }
 
@@ -140,12 +132,12 @@ class TravelPlanControllerIT extends BaseControllerIT {
                 .destinations(new ArrayList<>())
                 .startDate(LocalDate.of(2025, 7, 1))
                 .endDate(LocalDate.of(2025, 7, 10))
-                .tripType(TripType.VACATION).originCountry("BR").notes("Summer escape").build();
+                .tripType(TripType.VACATION).notes("Summer escape").build();
 
         for (int i = 0; i < 6; i++) {
             dto.getDestinations().add(
-                    TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Rome_" + i)
-                            .country("IT")
+                    TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).toCity("Rome_" + i)
+                            .toCountry("IT")
                             .build());
         }
 
@@ -161,18 +153,9 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
     @Test
     void testCreateTravelPlan_endDateBeforeStartDate_shouldReturnBadRequest() throws Exception {
-        TravelPlanDTO dto = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .travelerTypes(List.of(TravelerType.ADULT))
-                .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(15)).city("Paris").country("FR").build()))
-                .startDate(LocalDate.of(2025, 7, 10))
-                .endDate(LocalDate.of(2025, 7, 1)) // End before start
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .notes("Backwards trip")
-                .build();
+        TravelPlanDTO dto = TravelPlanHelper.dtoWithSingleDestination(userId, null, null);
+        dto.setStartDate(LocalDate.of(2025, 7, 10));
+        dto.setEndDate(LocalDate.of(2025, 7, 1));
 
         String body = objectMapper.writeValueAsString(dto);
 
@@ -186,18 +169,8 @@ class TravelPlanControllerIT extends BaseControllerIT {
 
     @Test
     void testCreateTravelPlan_emptyTravelerType_shouldReturnBadRequest() throws Exception {
-        TravelPlanDTO dto = TravelPlanDTO.builder()
-                .userProfileId(userId)
-                .travelerTypes(List.of())
-                .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now())
-                                .endDate(LocalDate.now().plusDays(15)).city("Paris").country("FR").build()))
-                .startDate(LocalDate.of(2025, 7, 10))
-                .endDate(LocalDate.of(2026, 7, 1))
-                .tripType(TripType.VACATION)
-                .originCountry("BR")
-                .notes("Backwards trip")
-                .build();
+        TravelPlanDTO dto = TravelPlanHelper.dtoWithSingleDestination(userId, null, null);
+        dto.setTravelerTypes(new ArrayList<>());
 
         String body = objectMapper.writeValueAsString(dto);
 
@@ -213,16 +186,7 @@ class TravelPlanControllerIT extends BaseControllerIT {
     void testCreateTravelPlan_invalidUser_shouldReturnBadRequest() throws Exception {
         Long invalidUserId = 999999L; // Assuming this user does not exist
 
-        TravelPlanDTO dto = TravelPlanDTO.builder()
-                .userProfileId(invalidUserId)
-                .destinations(Collections.singletonList(
-                        TravelPlanDestinationDTO.builder().startDate(LocalDate.now()).endDate(LocalDate.now().plusDays(15)).city("Paris")
-                                .country("FR").build()))
-                .startDate(LocalDate.of(2025, 5, 1))
-                .endDate(LocalDate.of(2025, 5, 15))
-                .tripType(TripType.VACATION)
-                .notes("Explore Japan")
-                .build();
+        TravelPlanDTO dto = TravelPlanHelper.dtoWithSingleDestination(invalidUserId, null, null);
 
         String body = objectMapper.writeValueAsString(dto);
 

@@ -22,9 +22,19 @@ public class TravelPlanDestinationDTO {
 
     @ValidCountryCode
     @NotBlank
-    private String country;
+    @JsonProperty("to_country")
+    private String toCountry;
+    @JsonProperty("to_city")
     @NotBlank
-    private String city;
+    private String toCity;
+
+    @ValidCountryCode
+    @NotBlank
+    @JsonProperty("from_country")
+    private String fromCountry;
+    @JsonProperty("from_city")
+    @NotBlank
+    private String fromCity;
 
     @NotNull
     @JsonProperty("start_date")

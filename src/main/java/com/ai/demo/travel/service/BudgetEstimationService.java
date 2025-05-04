@@ -188,15 +188,15 @@ public class BudgetEstimationService {
                 .collect(Collectors.joining());
         return rawPrompt.replace("{{budgetLevel}}", userProfile.getBudgetLevel().name())
                 .replace("{{travelStyle}}", userProfile.getTravelStyle())
-                .replace("{{originCountry}}", ISO_COUNTRIES.get(travelPlan.getOriginCountry()))
-                .replace("{{destination}}", formatDestination(destination))
+                .replace("{{origin}}", formatDestination(destination.getFromCountry(), destination.getFromCity()))
+                .replace("{{destination}}", formatDestination(destination.getToCountry(), destination.getToCity()))
                 .replace("{{tripType}}", travelPlan.getTripType().name())
                 .replace("{{durationInDays}}", durationInDays)
                 .replace("{{travelers}}", travelers);
     }
 
-    private String formatDestination(TravelPlanDestinationDTO destination) {
-        return "%s (%s)".formatted(ISO_COUNTRIES.get(destination.getCountry()), destination.getCity());
+    private String formatDestination(String country, String city) {
+        return "%s (%s)".formatted(ISO_COUNTRIES.get(country), city);
     }
 
     public BudgetEstimationDTO findByTravelPlanId(Long travelPlanId) {

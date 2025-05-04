@@ -43,8 +43,6 @@ public class TravelPlan {
 
     private Long userProfileId;
 
-    private String originCountry;
-
     @OneToMany(mappedBy = "travelPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<TravelPlanDestination> destinations;
 

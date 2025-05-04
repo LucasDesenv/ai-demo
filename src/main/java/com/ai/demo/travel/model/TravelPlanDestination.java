@@ -37,8 +37,11 @@ public class TravelPlanDestination {
     @JoinColumn(name = "travel_plan_id")
     private TravelPlan travelPlan;
 
-    private String country;
-    private String city;
+    private String toCountry;
+    private String toCity;
+
+    private String fromCountry;
+    private String fromCity;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate startDate;

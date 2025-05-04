@@ -2,11 +2,9 @@ package com.ai.demo.travel.dto;
 
 import com.ai.demo.travel.model.TravelerType;
 import com.ai.demo.travel.model.TripType;
-import com.ai.demo.travel.validator.ValidCountryCode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,11 +26,6 @@ public class TravelPlanDTO {
     @JsonProperty("user_profile_id")
     private Long userProfileId;
 
-    @JsonProperty("origin_country")
-    @NotBlank
-    @ValidCountryCode
-    private String originCountry;
-
     @NotEmpty
     @Valid
     @Size(min = 1, max = 5)
@@ -40,6 +33,7 @@ public class TravelPlanDTO {
 
     @NotEmpty
     @Size(min = 1, max = 20)
+    @JsonProperty("traveler_types")
     private List<TravelerType> travelerTypes;
 
     @JsonProperty("start_date")

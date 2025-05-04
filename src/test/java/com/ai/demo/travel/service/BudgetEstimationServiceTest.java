@@ -184,8 +184,10 @@ class BudgetEstimationServiceTest {
         travelPlan.getDestinations().get(0).setLastModifiedAt(now.minusHours(1));
         travelPlan.getDestinations().add(TravelPlanDestinationDTO.builder()
                 .id(938723L)
-                .country("CA")
-                .city("NEW ONE")
+                .toCountry("CA")
+                .toCity("NEW ONE")
+                .fromCity("Vancouver")
+                .fromCountry("CA")
                 .startDate(LocalDate.now().plusDays(5))
                 .endDate(LocalDate.now().plusDays(12))
                 .lastModifiedAt(now)

@@ -7,7 +7,7 @@
         - Travelers: {{travelers}}
 
         The trip details:
-        - Country of origin: {{originCountry}}
+        - Origin: {{origin}}
         - Destinations: {{destination}}
         - Trip Type: {{tripType}}
         - Duration: {{durationInDays}} days
